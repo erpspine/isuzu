@@ -1,0 +1,404 @@
+<html>
+
+<head>
+    <style>
+        body {
+            Century Gothic", CenturyGothic, AppleGothic, sans-serif;
+font-size: 9pt;
+        }
+
+        p {
+            margin: 0pt;
+        }
+
+        table.items {
+            border: 0.1mm solid #000000;
+        }
+
+        table {
+            font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif;
+            font-size: 13pt;
+        }
+
+        td {
+            vertical-align: top;
+        }
+
+        .items td {
+            border-left: 0.1mm solid #000000;
+            border-right: 0.1mm solid #000000;
+        }
+
+        table thead td {
+            background-color: #EEEEEE;
+            text-align: center;
+            border: 0.1mm solid #000000;
+            font-variant: small-caps;
+        }
+
+        .items td.blanktotal {
+            background-color: #EEEEEE;
+            border: 0.1mm solid #000000;
+            background-color: #FFFFFF;
+            border: 0mm none #000000;
+            border-top: 0.1mm solid #000000;
+            border-right: 0.1mm solid #000000;
+        }
+
+        .items td.totals {
+            text-align: right;
+            border: 0.1mm solid #000000;
+        }
+
+        .items td.totalsy {
+            border: 0.1mm solid #000000;
+        }
+
+        .headings {
+            font-size: 19pt;
+        }
+
+        .items td.totalss {
+            text-align: right;
+            border: 0.1mm solid #000000;
+            text-transform: uppercase;
+        }
+
+        .items td.cost {
+            text-align: "."center;
+            text-transform: uppercase;
+        }
+
+        .invoice-title h1 {
+            font-size: 50px;
+            font-weight: lighter;
+            text-align: center;
+            margin: 0;
+            text-transform: uppercase;
+            padding: 5px;
+            letter-spacing: 2px;
+        }
+
+        .itemss {
+            text-transform: uppercase;
+            border: 0.1mm solid #000000;
+        }
+
+        .headerData {
+            text-align: center;
+            vertical-align: middle;
+            text-transform: uppercase;
+        }
+
+        .dotted td {
+            border-bottom: 0.1mm solid #000000;
+        }
+
+        .mycolor td {
+            color: #000000;
+        }
+
+        table.print-friendly tr td,
+        table.print-friendly tr th {
+            page-break-inside: auto !important;
+        }
+        .weight {
+            background-color: #ffc000;
+        }
+        .sum {
+            background-color: #92d050;
+        }
+        .sumrow {
+            background-color: #d9d9d9;
+        }
+        .wdpv{
+            background-color: #c5d9f1;
+            
+        }
+        .footertotal{
+            background-color: #ffff00;
+            
+
+        }
+        
+
+.card {
+          
+            padding: 10px;
+          
+            width: 210px;
+            border: 0.1mm solid #000000;
+            float: left;
+            height:320px;
+            margin-bottom:10px;
+        }
+        .card-title {
+            font-weight: bold;
+        }
+        .card-content {
+            margin-top: 5px;
+        }
+        .header-table {
+            width: 100%;
+            border-bottom: 0.8mm solid #fa1826;
+        }
+
+        .header-table tr td:first-child {
+            color: #0f4d9b;
+            font-size: 9pt;
+            width: 60%;
+            text-align: left;
+        }
+
+        .address {
+            color: #000000;
+            font-size: 10pt;
+            width: 60%;
+            text-align: right;
+        }
+
+        .header-table-text {
+            color: #0f4d9b;
+            font-size: 9pt;
+            margin: 0;
+        }
+
+        .header-table-child {
+            color: #0f4d9b;
+            font-size: 8pt;
+        }
+
+        .header-table-child tr:nth-child(2) td {
+            font-size: 9pt;
+            padding-left: 50px;
+        }
+        .doc-title-td {
+            text-align: center;
+            width: 100%;
+        }
+
+        .doc-title {
+            font-size: 13pt;
+            color: #0f4d9b;
+        }
+
+        .doc-title-new {
+            font-size: 10pt;
+            color: #0f4d9b;
+        }
+
+        .doc-table {
+            font-size: 10pt;
+            margin-top: 5px;
+            width: 100%;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <htmlpagefooter name="myfooter">
+        <div style="border-top: 1px solid #000000; font-size: 8pt; text-align: center; padding-top: 3mm;width:100%">
+            <div style="float:left; width:33% ">
+                Analysed By: {{ Auth::user()->name; }}
+            </div>
+            <div style="float:left; width:33% ">
+                Printed On: {{ date('d/m/Y') }}
+            </div>
+            <div style="float:left;width:33% ">
+                Page {PAGENO} of {nb}
+            </div>
+        </div>
+    </htmlpagefooter>
+    <sethtmlpagefooter name="myfooter" value="on" />
+    <table class="header-table">
+        <tr>
+            <td>
+                <img src="{{ storage_path('app\public\img\logo.jpg') }}" style="width:250px;  border-radius: 50%;" /><br>
+            </td>
+            <td class="address"><br><br>
+                Enterprise/Mombasa Road,
+                Industrial Area<br>
+                P.O Box 30527 - 00100.<br>
+                Tell : +254 703 013 111<br>
+                info.kenya@isuzu.co.ke<br>
+                www.isuzutrucks.co.ke
+            </td>
+        </tr>
+    </table>
+
+    <table class="doc-table">
+        <tr>
+            <td class="doc-title-td">
+                <span class='doc-title'>
+                    <b>
+                        {{ $title }}
+                    </b>
+                </span>
+            </td>
+        </tr>
+    </table><br>
+
+
+
+
+  
+
+
+    <div  style="height:200px;"> <img   src="upload/date_chart.png" ></div>
+     
+  
+
+    <div style="height:200px;"> <img  src="upload/category_chart.png" ></div>
+
+    
+
+    <div style="height:200px;"> <img src="upload/shop_chart.png" ></div>
+    <div style="page-break-before:always;"></div>
+    <h3 align="center">REPORT BY PERIOD</h3>
+        <table class="items" width="100%" style="font-size: 10pt; font-weight: bold; border-collapse: collapse; " cellpadding="8">
+            <thead>
+                <tr class="mycolor">
+                    <td rowspan="2"> Sample Size</td>
+                    <td colspan="3">DPV</td>
+                    <td colspan="3">WDPV</td>
+                </tr>
+                <tr class="mycolor">
+                    <td>Target </td>
+                    <td> Actual </td>
+                    <td>Status</td>
+                    <td>Target</td>
+                    <td>Actual</td>
+                    <td>Status</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="dotted">
+                    <td>{{ $sample_size }}</td>
+                    <td>{{ $dpv_target }}</td>
+                    <td>{{ $dpv }}</td>
+                    <td>{{ $dpvtatus }}</td>
+                    <td>{{ $wdpv_target }}</td>
+                    <td>{{ $wdpv }}</td>
+                    <td>{{ $wdpvtatus }}</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3 align="center">REPORT BY CATEGORY </h3>
+        <table class="items print-friendly" width="100%" style="font-size: 10pt; font-weight: bold; border-collapse: collapse; " cellpadding="8">
+        <thead>
+            <tr class="mycolor">
+                <td>Total Vehicle Audited</td>
+                <td>DPV</td>
+                <td>WDPV</td>
+            </tr>
+        </thead>
+        <tbody>
+            @php
+                $totaldpv = 0;
+                $totalwdpv = 0;
+            @endphp
+            @foreach ($categories as $category)
+                @php
+                    $dpv = 0;
+                    $wdpv = 0;
+                    if ($category->answers_sum_defect_count > 0 && $sample_size > 0) {
+                        $dpv = $category->answers_sum_defect_count / $sample_size;
+                        $wdpv = @$category->answers->first()->total_price / $sample_size;
+                    }
+                    $totaldpv += $dpv;
+                    $totalwdpv += $wdpv;
+                @endphp
+               <tr class="dotted">
+                    <td>{{ $category->name }}</td>
+                    <td>{{ $dpv }}</td>
+                    <td>{{ $wdpv }}</td>
+                </tr>
+            @endforeach
+
+         
+        </tbody>
+        <tfoot>
+        <tr class="footertotal">
+            <td >Total</td>
+            <td>{{ $totaldpv }}</td>
+            <td>{{ $totalwdpv }}</td>
+        </tr>
+    </tfoot>
+          
+       
+    </table>
+
+    <h3 align="center">REPORT BY SHOP </h3>
+    <table class="items print-friendly" width="100%" style="font-size: 10pt; font-weight: bold; border-collapse: collapse; " cellpadding="8">
+        <thead>
+            <tr class="mycolor">
+                <td>Shops</td>
+                <td>DPV</td>
+                <td>WDPV</td>
+            </tr>
+        </thead>
+        <tbody>
+            @php
+                $totalsdpv = 0;
+                $totalswdpv = 0;
+            @endphp
+            @foreach ($shopDataToday as $key=>$val)
+            @php
+            $dpv=round(($val->defect_count/$sample_size),2);
+            $wdpv=round(($val->total_weight/$sample_size),2);
+            $totalsdpv += $dpv;
+            $totalswdpv += $wdpv;
+           @endphp
+
+           
+              
+<tr class="dotted">
+                    <td>{{ $val->shop_name }}</td>
+                    <td>{{  $dpv }}</td>
+                    <td>{{  $totalswdpv }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+        <tfoot>
+            <tr class="footertotal">
+                <td>Total</td>
+                <td>{{ $totalsdpv }}</td>
+                <td>{{ $totalswdpv }}</td>
+            </tr>
+        </tfoot>
+    </table>
+
+
+    <div style="page-break-before:always;"></div>
+       
+
+        @foreach ($defects as $details )
+
+        <div   class="card"  style="background-color:{{ ($details->weight == '50') ? '#ffafc0' :'' }} "    >
+           
+            <div class="card-content">
+                <p>Date: <b>{{ dateFormat($details->vehicle->gca_completion_date) }}</b></p>
+                <p>Vehicle Type: <b>{{$details->vehicle_type }}</b></p>
+                <p>Vehicle: <b>{{$details->vehicle->vin_no }}</b></p>
+                <p>Lot & Job: <b>{{$details->vehicle->lot_no . ', ' . $details->vehicle->job_no }}</b></p>
+                <p>Shop: <b>{{$details->shop->report_name }}</b></p>
+                <p>Category: <b>{{$details->auditCategory->name }}</b></p>
+                <p>Defect: <b>{{$details->defect }}</b></p>
+                <p>UPC/FCA/Sheet No: <b>{{$details->gca_manual_reference }}</b></p>
+                <p>Teamleader: <b>{{ $details->responsible_team_leader }}</b></p>
+                <p>Defect Count: <b>{{ $details->defect_count}}</b></p>
+                <p>Defect Weight: <b>{{ $details->weight }}</b></p>
+                <p>Status: <b>{{ ($details->is_corrected == 'No') ? 'Open' : 'Closed'}}</b></p>
+            </div>
+        </div>
+
+
+       
+
+        @endforeach
+   
+  
+</body>
+
+</html>

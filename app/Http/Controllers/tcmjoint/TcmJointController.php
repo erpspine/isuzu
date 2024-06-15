@@ -1,0 +1,538 @@
+<?php
+
+namespace App\Http\Controllers\tcmjoint;
+
+use App\Http\Controllers\Controller;
+use App\Models\tcm\Tcm;
+use App\Models\tcmjoint\TcmJoint;
+use App\Models\unit_model\Unit_model;
+use DataTables;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\AppHelper;
+use App\Models\shop\Shop;
+use App\Models\system_user\System_users;
+use App\Models\tooljoint\ToolJoint;
+use App\Models\User;
+use DB;
+use Excel;
+
+class TcmJointController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        try {
+            if (request()->ajax()) {
+                $tcmjoint = TcmJoint::get();
+                return DataTables::of($tcmjoint)
+                ->addColumn('shop_name', function ($tcmjoint) {
+                    $shopname=null;
+                    if(!empty($tcmjoint->shop_id)){
+                        $shopname=$tcmjoint->shop->report_name;
+                    }
+                    return $shopname;
+                })
+                ->addColumn('teamleader', function ($tcmjoint) {
+                    //team_leader
+                    $teamleader=null;
+                    if(!empty($tcmjoint->team_leader_id)){
+                        $teamleader=$tcmjoint->team_leader->name;
+                    }
+                    return $teamleader;
+                })
+                    ->addColumn('tool_id', function ($tcmjoint) {
+                        return $tcmjoint->tool->tool_id;
+                    })
+                    ->addColumn('productiontool', function ($tcmjoint) {
+                        $name='';
+                        if(!empty($tcmjoint->production_tool)){
+                            $name= $tcmjoint->ptool->tool_id;
+
+                        }
+                        return $name;
+                        
+                    })
+
+                    
+                
+                    ->addColumn('action', function ($tcmjoint) {
+                        return '
+                        <div class="btn-group">
+                        <button type="button" class="btn btn-dark dropdown-toggle"
+                            data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            <i class="ti-settings"></i>
+                        </button>
+                        <div class="dropdown-menu animated slideInUp"
+                            x-placement="bottom-start"
+                            style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, 35px, 0px);">
+                            <a class="dropdown-item" href="' . route('tcmjoint.show', [$tcmjoint->id]) . '"><i
+                                    class="ti-eye"></i> Open</a>
+                            <a class="dropdown-item" href="' . route('tcmjoint.edit', [$tcmjoint->id]) . '"><i
+                                    class="ti-pencil-alt"></i> Edit</a>
+                            <a class="dropdown-item delete_brand_button delete-joint" href="' . route('tcmjoint.destroy', [$tcmjoint->id]) . '"><i
+                                    class="ti-trash"></i> Delete</a>
+                        </div>
+                    </div>
+                    ';
+                    })
+                    ->make(true);
+            }
+            return view('tcmjoint.index');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        try {
+            $tecms = Tcm::get()->pluck('tool_id', 'id');
+            $models = Unit_model::get()->pluck('model_name', 'id');
+            $team_leaders = User::get()->pluck('name', 'id');
+            $shops = Shop::where('is_gca_shop', 1)->get()->pluck('report_name', 'id');
+
+          
+            $model_select = [];
+            return view('tcmjoint.create')->with(compact('tecms', 'models', 'model_select','team_leaders','shops'));
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'tcm_id' => 'required',
+            'part_name_joint_id' => 'bail|required',
+            'station_used' => 'bail|required',
+            'upc' => 'bail|required',
+            'sheet_no' => 'bail|required',
+            'mean_toque' => 'bail|required',
+            'upper_control_limit' => 'bail|required',
+            'upper_control_limit' => 'bail|required',
+            'lower_specification_limit' => 'bail|required',
+            'upper_specification_limit' => 'bail|required',
+            'sample_size' => 'bail|required',
+            'production_tool'=> 'bail|required',
+            'shop_id'=> 'bail|required',
+            'team_leader_id'=> 'bail|required',
+            //'image_one' => 'required',
+        ]);
+        // Check validation failure
+        if ($validator->fails()) {
+            $output = [
+                'success' => false,
+                'msg' => "It appears you have forgotten to complete something",
+            ];
+        }
+        $data = $request->except(['_token']);
+        // Check validation success
+        if ($validator->passes()) {
+            if (request()->ajax()) {
+                try {
+                    $data['image_one'] = 'default.jpg';
+                    if ($request->image_one && $request->image_one != "undefined") {
+                        $data['image_one'] = (new AppHelper)->saveImageDynamic($request, 'image_one');
+                    }
+                    /*if ($request->image_two && $request->image_two != "undefined") {
+                        $data['image_two'] = (new AppHelper)->saveImageDynamic($request, 'image_two');
+                    }
+                    if ($request->image_three && $request->image_three != "undefined") {
+                        $data['image_three'] = (new AppHelper)->saveImageDynamic($request, 'image_three');
+                    }*/
+                    $data['created_by'] = auth()->user()->id;
+                    $data['frequency'] = 1;
+                   $record = TcmJoint::create($data);
+                   $tool_models=[];
+                   foreach ($data['model_id'] as $key => $value) {
+                    $tool_models[] = array(
+                      'tcm_joint_id' => $record->id,
+                      'model_id' => $value);
+                    
+                    
+                  }
+                  ToolJoint::insert($tool_models);
+            
+                    $output = [
+                        'success' => true,
+                        'msg' => "Joint Created Successfully"
+                    ];
+                } catch (\Exception $e) {
+                    \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+                    $output = [
+                        'success' => false,
+                        'msg' => $e->getMessage(),
+                    ];
+                }
+            }
+        }
+        return $output;
+    }
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $details=TcmJoint::find($id);
+        $tool_models=ToolJoint::where('tcm_joint_id',$id)->get();
+
+        return view('tcmjoint.show',compact('details','tool_models'));
+    }
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(TcmJoint $tcmjoint)
+    {
+        try {
+            $models = Unit_model::get()->pluck('model_name', 'id');
+            $tecms = Tcm::get()->pluck('tool_id', 'id');
+           $models_select = ToolJoint::where('tcm_joint_id', $tcmjoint->id)->get('model_id')->pluck('model_id');
+           $team_leaders = User::get()->pluck('name', 'id');
+           $shops = Shop::where('is_gca_shop', 1)->get()->pluck('report_name', 'id');
+           // dd($tcmjoint->id);
+            return view('tcmjoint.edit', compact('tcmjoint', 'models', 'tecms','models_select','team_leaders','shops'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'tcm_id' => 'required',
+            'part_name_joint_id' => 'bail|required',
+            'station_used' => 'bail|required',
+            'upc' => 'bail|required',
+            'sheet_no' => 'bail|required',
+            'mean_toque' => 'bail|required',
+            'upper_control_limit' => 'bail|required',
+            'upper_control_limit' => 'bail|required',
+            'lower_specification_limit' => 'bail|required',
+            'upper_specification_limit' => 'bail|required',
+            'sample_size' => 'bail|required',
+            'production_tool'=> 'bail|required',
+            'shop_id'=> 'bail|required',
+            'team_leader_id'=> 'bail|required',
+        ]);
+        // Check validation failure
+        if ($validator->fails()) {
+            $output = [
+                'success' => false,
+                'msg' => "It appears you have forgotten to complete something",
+            ];
+        }
+        $data = $request->except(['_token']);
+        if ($validator->passes()) {
+            if (request()->ajax()) {
+                try {
+                    if ($request->image_one && $request->image_one != "undefined") {
+                        $data['image_one'] = (new AppHelper)->saveImageDynamic($request, 'image_one');
+                    }
+             
+                    $data['created_by'] = auth()->user()->id;
+                    $data['frequency'] = 1;
+
+                    $result = TcmJoint::find($id);
+                    $result->update($data);
+                    $result->touch();
+                    ToolJoint::where('tcm_joint_id',$id)->delete();
+                    $tool_models=[];
+                    foreach ($data['model_id'] as $key => $value) {
+                     $tool_models[] = array(
+                       'tcm_joint_id' => $id,
+                       'model_id' => $value,
+                       'created_at'=>date('Y-m-d H:i:s'),
+                       'updated_at'=>date('Y-m-d H:i:s'),
+                    );
+                     
+                     
+                   }
+                   ToolJoint::insert($tool_models);
+                    $output = [
+                        'success' => true,
+                        'msg' => "Joint  Updated Successfully"
+                    ];
+                 
+                } catch (\Exception $e) {
+                    \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+                    $output = [
+                        'success' => false,
+                        'msg' => $e->getMessage(),
+                    ];
+                }
+            }
+        }
+        return $output;
+    }
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        if (request()->ajax()) {
+            try {
+                $can_be_deleted = true;
+                $error_msg = '';
+                //Check if any routing has been done
+                //do logic here
+                $items = TcmJoint::where('id', $id)
+                    ->first();
+                if ($can_be_deleted) {
+                    if (!empty($items)) {
+                        DB::beginTransaction();
+                        $items->delete();
+                        DB::commit();
+                    }
+                    $output = [
+                        'success' => true,
+                        'msg' => "Joint Deleted Successfully"
+                    ];
+                } else {
+                    $output = [
+                        'success' => false,
+                        'msg' => $error_msg
+                    ];
+                }
+            } catch (\Exception $e) {
+                DB::rollBack();
+                \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+                $output = [
+                    'success' => false,
+                    'msg' => "Something Went Wrong"
+                ];
+            }
+            return $output;
+        }
+    }
+    public function import_joint()
+    {
+        try {
+            return view('tcmjoint.importjoint');
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    public function savetooljoint_import(Request $request)
+    {
+        try {
+            //Set maximum php execution time
+            ini_set('max_execution_time', 0);
+            ini_set('memory_limit', -1);
+            if ($request->hasFile('tools_upload')) {
+                $file = $request->file('tools_upload');
+                $parsed_array = Excel::toArray([], $file);
+                $imported_data = array_splice($parsed_array[0], 1);
+                $formated_data = [];
+                $is_valid = true;
+                $error_msg = '';
+                $total_rows = count($imported_data);
+                DB::beginTransaction();
+                foreach ($imported_data as $key => $value) {
+                    if (count($value) < 13) {
+                        $is_valid =  false;
+                        $error_msg = "Some of the columns are missing. Please, use latest  file template.";
+                        break;
+                    }
+                    $row_no = $key + 1;
+                    $tools_array = [];
+                    $tools_array['created_by'] = auth()->user()->id;
+                    $tools_array['created_at'] = date('Y-m-d H:i:s');
+                    $tools_array['updated_at'] = date('Y-m-d H:i:s');
+                    //Tool ID 
+                    $tool_id = trim($value[0]);
+                    if (!empty($tool_id)) {
+                        $tool = tcm::where('tool_id',  $tool_id)->first();
+                        if (!empty($tool)) {
+                            $tools_array['tcm_id'] = $tool->id;
+                        } else {
+                            $is_valid = false;
+                            $error_msg = "Tool ID  not found in row no. $row_no";
+                            break;
+                        }
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Tool ID  is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Model
+                    $model_id = trim($value[1]);
+                    if (!empty($model_id)) {
+                        $model = Unit_model::where('model_name',  $model_id)->first();
+                        if (!empty($model)) {
+                            $tools_array['model_id'] = $model->id;
+                        } else {
+                            $is_valid = false;
+                            $error_msg = "Model  not found in row no. $row_no";
+                            break;
+                        }
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Tool ID  is required in row no. $row_no";
+                        break;
+                    }
+                    //Tool Joint
+                    $joint_id = trim($value[2]);
+                    if (!empty($joint_id)) {
+                        $tools_array['part_name_joint_id'] = $joint_id;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Joint  is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Station 
+                    $station = trim($value[3]);
+                    if (!empty($station)) {
+                        $tools_array['station_used'] = $station;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Station  is required in row no. $row_no";
+                        break;
+                    }
+                    //Add UPC 
+                    $upc = trim($value[4]);
+                    if (!empty($upc)) {
+                        $tools_array['upc'] = $upc;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "UPC  is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Sheet No 
+                    $sheet_no = trim($value[5]);
+                    if (!empty($sheet_no)) {
+                        $tools_array['sheet_no'] = $sheet_no;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Sheetno  is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Mean Toque 
+                    $mean_toque = trim($value[6]);
+                    if (!empty($mean_toque)) {
+                        $tools_array['mean_toque'] = $mean_toque;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Mean Toque  is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Upper Control Limit 
+                    $upper_control_limit = trim($value[7]);
+                    if (!empty($upper_control_limit)) {
+                        $tools_array['upper_control_limit'] = $upper_control_limit;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Upper Control Limit   is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Lower Control Limit 
+                    $lower_control_limit = trim($value[8]);
+                    if (!empty($lower_control_limit)) {
+                        $tools_array['lower_control_limit'] = $lower_control_limit;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Lower Control Limit   is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Upper Specification Limit 
+                    $upper_specification_limit = trim($value[9]);
+                    if (!empty($upper_specification_limit)) {
+                        $tools_array['upper_specification_limit'] = $upper_specification_limit;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Upper Specification Limit   is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Lower Specification Limit 
+                    $lower_specification_limit = trim($value[10]);
+                    if (!empty($lower_specification_limit)) {
+                        $tools_array['lower_specification_limit'] = $lower_specification_limit;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Lower Specification Limit   is required in row no. $row_no";
+                        break;
+                    }
+                    //Add KCDS Code 
+                    $kcds_code = trim($value[11]);
+                    if (!empty($kcds_code)) {
+                        $tools_array['kcds_code'] = $kcds_code;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "KCDS Code is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Sample Size 
+                    $sample_size = trim($value[11]);
+                    if (!empty($sample_size)) {
+                        $tools_array['sample_size'] = $sample_size;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Sample Size is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Frequency 
+                    $frequency = trim($value[12]);
+                    if (!empty($frequency)) {
+                        $tools_array['frequency'] = $frequency;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Frequency is required in row no. $row_no";
+                        break;
+                    }
+                    //Assign to formated array
+                    $formated_data[] = $tools_array;
+                }
+                if (!$is_valid) {
+                    throw new \Exception($error_msg);
+                }
+                //Create new product
+                $tools = TcmJoint::insert($formated_data);
+                $output = [
+                    'success' => 1,
+                    'msg' => 'Joint Imported Successfully!!'
+                ];
+            }
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+            $output = [
+                'success' => 0,
+                'msg' => $e->getMessage()
+            ];
+            return redirect('importjoint')->with('notification', $output);
+        }
+        return redirect('importjoint')->with('status', $output);
+    }
+}

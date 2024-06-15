@@ -1,0 +1,37 @@
+                        <div class="form-group row">
+                            <label for="tcm_id" class="col-sm-4 text-right control-label col-form-label">Select Tool<span
+                                    class="text-danger">*</span></label>
+                            <div class="col-sm-8">
+                                <select id="tcm_id" name="tcm_id" class="form-control custom-select select2"   style="height: 36px;width: 100%;" required>
+                                    <option value="">-- Select Tool --</option>
+                                    @foreach($tools as $item)
+                                        <option value="{{ $item->id }}" data-id="{{ $item->days_to_next_calibrarion }}" {{ $item->id == @$qcoscalibration->tcm_id ? 'selected' : '' }}>
+                                            {{ $item->tool_id .' '.$item->tool_model.'  '.$item->tool_type.' '. $item->serial_number .' '. $item->sku.' '. $item->shop->report_name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+
+
+
+                              
+                            </div>
+                        </div>
+                  
+                   
+                  
+                        <div class="form-group row">
+                            <label for="rate" class="col-sm-4 text-right control-label col-form-label">Calibration Date</label>
+                            <div class="col-sm-8">
+                                {{ Form::text('date_calibrated', null, ['class' => 'form-control', 'data-toggle' => 'datepicker', 'placeholder' => 'Date', 'autocomplete' => 'off']) }}
+
+                            </div>
+                        </div>
+
+                   
+                        <div class="form-group row">
+                            <label for="note" class="col-sm-4 text-right control-label col-form-label">Note</label>
+                            <div class="col-sm-8">
+                                {{ Form::text('note', null, ['class' => 'form-control', 'placeholder' => 'Note', 'autocomplete' => 'off']) }}
+                            </div>
+                        </div>

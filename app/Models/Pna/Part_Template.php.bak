@@ -1,0 +1,11 @@
+<?php
+
+namespace App\Models\Pna;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Part_Template extends Model
+{
+    use HasFactory;
+}

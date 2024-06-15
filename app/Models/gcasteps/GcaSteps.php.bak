@@ -1,0 +1,23 @@
+<?php
+
+namespace App\Models\gcasteps;
+
+use App\Models\gcaquerycategoryitemcv\GcaQueryCategoryItemCv;
+use App\Models\gcaquerytitle\GcaQueryTitle;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class GcaSteps extends Model
+{
+    use HasFactory;
+    protected $fillable = ['vehicle_type','title','description','audit_time','position'];
+
+    public function titles()
+    {
+        return $this->hasMany(GcaQueryTitle::class,'gca_stage_id','id');
+    }
+    public function queries()
+    {
+        return $this->hasMany(GcaQueryCategoryItemCv::class,'gca_stage_id','id');
+    }
+}

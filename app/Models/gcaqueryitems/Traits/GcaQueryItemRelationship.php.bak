@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Models\gcaqueryitems\Traits;
+
+use App\Models\gcaquery\GcaQuery;
+
+/**
+ * Class GcaQueryItemRelationship
+ */
+trait GcaQueryItemRelationship
+{
+
+
+
+    public function gcaquery()
+    {
+        return $this->hasOne(GcaQuery::class,'id','gca_audit_report_category_id');
+    }
+ 
+
+  
+
+
+
+}

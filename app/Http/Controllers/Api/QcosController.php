@@ -1,0 +1,354 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\qcoscontainemnt\QcosContainment;
+use App\Models\qcosemail\QcosEmail;
+use App\Models\qcosmonitoringsheet\QcosMonitoringSheet;
+use App\Models\tcm\Tcm;
+use App\Models\tcmjoint\TcmJoint;
+use App\Models\tooljoint\ToolJoint;
+use App\Models\unit_model\Unit_model;
+use App\Models\user\User;
+use App\Models\vehicle_units\vehicle_units;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use DB;
+use Illuminate\Support\Str;
+
+class QcosController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        //
+    }
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+    }
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
+    }
+    public function checktool($tool_id)
+    {
+        $master = array();
+        $tool = Tcm::where('sku', '' . $tool_id . '')->first();
+      
+        if ($tool) {
+            $master['tool_id'] = $tool->id;
+            return response()->json(['msg' => null, 'data' => $master, 'success' => true], 200);
+        }else{
+ 
+            return response()->json(['msg' => null, 'data' => null, 'success' => false], 200);
+
+        }
+      
+    }
+    public function tooldetails($toolid)
+    {
+        $master = array();
+        $tools = Tcm::with('shop')->find($toolid);
+        $status = 'OK';
+        if (Carbon::parse(Carbon::now())->gt($tools->next_calibration_date)) {
+            $status = 'NOK';
+        }
+        $master['status'] = $status;
+        $master['result'] = $tools;
+        return response()->json(['msg' => null, 'data' => $master, 'success' => true], 200);
+    }
+    public function validateunit($vehicleid, $toolid)
+    {
+        $master = array();
+        $check_unit = vehicle_units::where('vin_no', '' . $vehicleid . '')->first();
+        if ($check_unit) {
+            //check if model exist
+            $check_model = ToolJoint::where('model_id', $check_unit->model_id)->exists();
+            if ($check_model) {
+                $master['vehicle_id'] = $check_unit->id;
+                return response()->json(['msg' => null, 'data' => $master, 'success' => true], 200);
+            }else{
+                return response()->json(['msg' => null, 'data' => null, 'success' => false], 200);
+
+            }
+
+        
+        }else{
+            return response()->json(['msg' => null, 'data' => null, 'success' => false], 200);
+        }
+       
+    }
+    public function load_validated_units($vehicleid, $toolid)
+    {
+        $master = array();
+        //$models=vehicle_units::find($vehicleid);
+        //tool details
+        $tools = Tcm::with('shop')->find($toolid);
+        $status = 'OK';
+        if (Carbon::parse(Carbon::now())->gt($tools->next_calibration_date)) {
+            $status = 'NOK';
+        }
+        $vehicle = vehicle_units::with('model')->where('id', $vehicleid)->first();
+        $model_id= $vehicle->model_id;
+        $joints = TcmJoint::whereHas('tool')->whereHas('toolmodel', function ($query) use($model_id) {
+            $query->where('model_id',$model_id);
+        })->with(['tool', 'tool.shop'])->get();
+        $master['status'] = $status;
+        $master['result'] = $tools;
+        $master['vehicle_result'] = $vehicle;
+        $master['joint_result'] = $joints;
+        return response()->json(['msg' => null, 'data' => $master, 'success' => true], 200);
+    }
+    public function saveqcos(Request $request)
+    {
+        if (empty($request->reading) || $request->reading == 'undefined' ||  empty($request->joint_id) || $request->joint_id == 'undefined' || empty($request->vehicle_id) || $request->vehicle_id == 'undefined') {
+            return response()->json(['msg' => 'You have to  fill all fields!!!', 'data' => null, 'success' => false], 200);
+            exit;
+        }
+        $status = "OK";
+        $issue = '';
+        if ($request->reading < $request->lsl) {
+            $status = "NOK";
+            $issue = 'UNDER-TORQUE';
+        }
+        if ($request->reading > $request->usl) {
+            $status = "NOK";
+            $issue = 'OVER-TORQUE';
+        }
+        //check last insert
+        DB::beginTransaction();
+        $master = array();
+        $master['created_by'] = Auth::id();
+        $master['result_type'] = $request->result_type;
+        $master['reading'] = $request->reading;
+        $master['result_status'] = $status;
+        $master['vehicle_id'] = $request->vehicle_id;
+        $master['tcm_id'] = $request->tcm_id;
+        $master['joint_id'] = $request->joint_id;
+        $master['reading_date'] = date('Y-m-d');
+        $master['vin_no'] = substr($request->vin_no, -4);
+        $result_type = 'Quality';
+        if ($master['result_type'] == 'Quality') {
+            $result_type = 'Production';
+        }
+        $lastinser = QcosMonitoringSheet::where('joint_id',$master['joint_id'])->where('result_type', $result_type)->where('reading_date', $master['reading_date'])->whereNull('paired')->first();
+        if ($lastinser) {
+            $master['qcos_ref'] = $lastinser->qcos_ref;
+            $master['paired'] = 'Yes';
+            $lastinser->paired = 'Yes';
+            $lastinser->update();
+        } else {
+            $master['qcos_ref'] = Str::random(10);
+        }
+        $record = QcosMonitoringSheet::create($master);
+        if ($status == "NOK") {
+            //save record to monitoring sheet
+            $action_master = array();
+            $problem = $issue . ' reading for Joint ' . $request->joint_name . ' with Tool ID ' . $request->tool_name . ' in Model ' . $request->model_name . ' Lot ' . $request->lot_no . ' & Job ' . $request->job_no . '';
+            $calibration_action = 'Calibrate Torque';
+            $production_action = 'Initiate containment in all affected units';
+            //Team leader
+           
+            $check_joint = TcmJoint::where('id', $request->joint_id)->first();
+
+
+            $team_leader_name = null;
+            if (!empty($check_joint->team_leader_id)) {
+                $team_leader_name = User::where('id', $check_joint->team_leader_id)->value('name');   
+            }
+            $shop_id=$request->shop_id;
+            if (!empty($check_joint->shop_id)) {
+                $shop_id = $check_joint->shop_id;   
+            }
+
+
+
+            $calibration_details[] = [
+                'date_open' => date('Y-m-d'),
+                'qcos_monitoring_sheet_id' => $record->id,
+                'generated_by' => Auth::id(),
+                'item' => $issue,
+                'problem' => $problem,
+                'action' => $calibration_action,
+                'responsible' => 'Kioko',
+                'joint_id' => $request->joint_id,
+                'shop_id' => $shop_id,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+            $production_details[] = [
+                'date_open' => date('Y-m-d'),
+                'qcos_monitoring_sheet_id' => $record->id,
+                'generated_by' => Auth::id(),
+                'item' => $issue,
+                'problem' => $problem,
+                'action' => $production_action,
+                'responsible' => $team_leader_name,
+                'joint_id' => $request->joint_id,
+                'shop_id' => $request->shop_id,
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+            $details = [
+                'tool_id' => $request->tool_name,
+                'joint_id' => $request->joint_name,
+                'model' => $request->model_name,
+                'vehicle' => $request->vin_no,
+                'lot' => $request->lot_no,
+                'job' => $request->job_no,
+                'usl' => $request->usl,
+                'lsl' => $request->lsl,
+                'reading' => $request->reading,
+                'status' => $status,
+            ];
+            $action_master = array_merge($calibration_details, $production_details);
+            QcosContainment::insert($action_master);
+           $emails = QcosEmail::get()->pluck('email');
+          //$emails = ['admin@technogurudigitalsystems.com'];
+            $send = \Mail::to($emails)->send(new \App\Mail\QcosNotification($details));
+        }
+        DB::commit();
+        if ($record) {
+            return response()->json(['msg' =>   'Record Saved Successfully', 'data' => null, 'success' => true], 200);
+        }
+    }
+    public function checkqcos(Request $request)
+    {
+        if (empty($request->reading) || $request->reading == 'undefined' ||  empty($request->joint_id) || $request->joint_id == 'undefined' || empty($request->vehicle_id) || $request->vehicle_id == 'undefined') {
+            return response()->json(['msg' => 'You have to  fill all fields!!!', 'data' => null, 'success' => false], 200);
+            exit;
+        }
+        $status = "OK";
+        if ($request->reading < $request->lsl || $request->reading > $request->usl) {
+            $status = "NOK";
+        }
+        $error_exist = false;
+        if ($status == "NOK") {
+            $error_exist = true;
+        }
+        return response()->json(['msg' =>   'Record OK', 'data' => $error_exist, 'success' => true], 200);
+    }
+    public function load_models_from_toolid($toolid)
+    {
+        $records = TcmJoint::whereHas('model')->with(['model', 'tool'])->where('tcm_id', $toolid)->get();
+        $master = [];
+        foreach ($records as  $record) {
+            $master[] = array(
+                'joint_id' => $record->id,
+                'tcm_id' => $record->id,
+                'tool_name' => $record->tool->tool_id,
+                'joint_name' => $record->part_name_joint_id,
+                'model_id' => $record->model->id,
+                'model_name' => $record->model->model_name,
+                'lsl' => $record->lower_specification_limit,
+                'usl' => $record->upper_specification_limit,
+            );
+        }
+        return response()->json(['msg' => null, 'data' => $master, 'success' => true], 200);
+    }
+    public function load_vehicle_form_model($vehicleid)
+    {
+        $vehicles = vehicle_units::whereHas('model', function ($query) use ($vehicleid) {
+            $query->where('model_id', $vehicleid);
+        })->get();
+        return response()->json(['msg' => null, 'data' => $vehicles, 'success' => true], 200);
+    }
+    public function load_qcos_actions()
+    {
+        $actions = QcosContainment::where('status', 'open')->get();
+        return response()->json(['msg' => null, 'data' => $actions, 'success' => true], 200);
+    }
+    public function save_qcos_action(Request $request)
+    {
+        if (empty($request->remarks) || $request->remarks == 'undefined') {
+            return response()->json(['msg' => 'You have to  fill all fields!!!', 'data' => null, 'success' => false], 200);
+            exit;
+        }
+        DB::beginTransaction();
+        $containment = QcosContainment::find($request->id);
+        $containment->resolved_by = Auth::id();
+        $containment->remarks = $request->remarks;
+        $containment->date_closed = date('Y-m-d');
+        $containment->status = 'closed';
+        $containment->update();
+        DB::commit();
+        return response()->json(['msg' =>   'Issue Saved Successfully', 'data' => null, 'success' => true], 200);
+    }
+
+    public function load_joint($vehicleid, $toolid,$jointid)
+    {
+        $master = array();
+        //$models=vehicle_units::find($vehicleid);
+        //tool details
+        $tools = Tcm::with('shop')->find($toolid);
+
+        $vehicle = vehicle_units::with('model')->where('id', $vehicleid)->first();
+        $model_id= $vehicle->model_id;
+        $joints = TcmJoint::where('id',$jointid)->whereHas('tool')->whereHas('toolmodel', function ($query) use($model_id) {
+            $query->where('model_id',$model_id);
+        })->with(['tool', 'tool.shop'])->first();
+        $master['result'] = $tools;
+        $master['vehicle_result'] = $vehicle;
+        $master['joint_result'] = $joints;
+        return response()->json(['msg' => null, 'data' => $master, 'success' => true], 200);
+    }
+}

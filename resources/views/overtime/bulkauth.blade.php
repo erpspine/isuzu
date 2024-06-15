@@ -1,0 +1,271 @@
+
+@extends('layouts.app')
+
+@section('content')
+
+    <!-- ============================================================== -->
+    <!-- Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+    <div class="row page-titles">
+        <div class="col-md-5 col-12 align-self-center">
+            <h3 class="text-themecolor mb-0">ATTENDANCE & OT AUTHORIZATION</h3>
+            <ol class="breadcrumb mb-0 p-0 bg-transparent">
+                <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                <li class="breadcrumb-item active">AUTHORIZATION</li>
+            </ol>
+        </div>
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- Container fluid  -->
+    <!-- ============================================================== -->
+    <div class="container-fluid">
+
+
+    <!-- Individual column searching (select inputs) -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body bg-cyan mb-2">
+
+                        {{ Form::open(['route' => 'checkattendance1', 'method' => 'GET'])}}
+                            @csrf
+                                @if (Auth()->User()->superAdmin == 1)
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class='input-group'>
+                                            {{Form::select('shop', $shops1, $shops1->pluck('id'), array('class'=>'form-control select2', 'placeholder'=>'Please select ...', 'required'=>'required',
+                                            'style'=>'width: 80%;'))}}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class='input-group'>
+                                            <input type='text' name="mdate" class="form-control singledate" />
+
+                                            <div class="input-group-append">
+                                                <span class="input-group-text">
+                                                    <span class="ti-calendar"></span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                            <button class="nav-link btn-danger rounded-pill d-flex align-items-center px-3 mr-5" style="background-color:#da251c; ">
+                                          <i class="icon-note m-1"></i><span class="d-none d-md-block font-14">Proceed to Record</span></button>
+                                    </div>
+                                </div>
+                                @else
+                                    @if (Auth()->User()->section == "ALL")
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class='input-group'>
+                                                {{Form::select('shop', $shops1, $shops1->pluck('id'), array('class'=>'form-control select2', 'placeholder'=>'Please select ...', 'required'=>'required',
+                                                'style'=>'width: 80%;'))}}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class='input-group'>
+                                                <input type='text' name="mdate" class="form-control singledate" />
+
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">
+                                                        <span class="ti-calendar"></span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button class="nav-link btn-danger rounded-pill d-flex align-items-center px-3" style="background-color:#da251c; ">
+                                            <i class="icon-note m-1"></i><span class="d-none d-md-block font-14">Proceed to Record</span></button>
+                                        </div>
+                                    </div>
+                                    @elseif(Auth()->User()->section > 0)
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group" style="font-size: 18px;">
+                                                <input type="hidden" name="shop" value="{{Auth()->User()->section}}">
+                                                {!! Form::label('name', 'Section:*') !!}
+                                                {!! Form::label('name', \App\Models\shop\Shop::where('id','=',Auth()->User()->section)->value('report_name'), ['class' => 'font-weight-bold']); !!}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class='input-group'>
+                                                <input type='text' name="mdate" class="form-control singledate" />
+
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text">
+                                                        <span class="ti-calendar"></span>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button class="nav-link btn-danger rounded-pill d-flex align-items-center px-3 mr-5" style="background-color:#da251c; ">
+                                        <i class="icon-note m-1"></i><span class="d-none d-md-block font-14">Proceed to Record</span></button>
+                                        </div>
+                                    </div>
+                                    @else
+                                    <div class="row form-group" style="font-size: 18px;">
+                                        <label class="text-danger">Sorry, No section allocated for the user!</label>
+                                        <h5 class="text-danger">Contact Admin for allocation.</h5>
+                                    </div>
+                                    @endif
+                                @endif
+                           {{ Form::close() }}
+                    </div>
+
+
+
+                    <div class="row ml-2">
+                        <div class="col-6">
+                            @if (Auth()->User()->section == 'ALL')
+                            {{ Form::open(['route' => 'bulkauth', 'method' => 'GET'])}}
+                                <div class="row">
+                                        <div class="col-7">
+                                            <select name="shopid" id="" class="form-control select2" required style="width:100%;">
+                                                <option value="">Choose Section</option>
+                                                @foreach ($shops as $item)
+                                                    <option value="{{$item->id}}">{{$item->report_name}}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="col-5">
+                                            <button id="btn-add-contact" class="btn btn-info">Load Section</button>
+                                        </div>
+
+                                </div>
+                            {{ Form::close() }}
+                            @elseif(Auth()->User()->section == '')
+                            <h2 class="text-danger" style="text-transform: uppercase;"><i><b>Sorry, No section assigned for the user, please contact Admin.</b></i></h2>
+                            @else
+                            <h2 class="text-primary" style="text-transform: uppercase;"><u><b>{{$shopname}}</b></u></h2>
+                            @endif
+                        </div>
+
+                        <div class="col-6">
+
+                        </div>
+
+                    </div>
+                    {{ Form::open(['route' => 'saveapprovals', 'method' => 'GET'])}}
+                    <input type="hidden" name="shopid" value="{{$shopid}}">
+                    <div class="row">
+                        <div class="col-6">
+
+                        </div>
+                        <div class="col-6">
+                            <div class="text-right d-flex justify-content-md-end justify-content-center mt-3 mt-md-0 mr-3">
+                                <button class="btn btn-warning">Approve OT & Attendance</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped search-table v-middle">
+                                <thead class="header-item">
+                                    <th class="text-dark font-weight-bold">No.</th>
+                                    <th class="text-dark font-weight-bold">Section</th>
+                                    <th class="text-dark font-weight-bold">Date</th>
+                                    <th class="text-dark font-weight-bold">HC</th>
+                                    <th class="text-dark font-weight-bold">Normal Hrs</th>
+                                    <th class="text-dark font-weight-bold">OT Hours</th>
+                                    <th class="text-dark font-weight-bold">Authorized Hrs</th>
+                                    <th>
+                                        <div class="n-chk align-self-center text-center">
+                                            <div class="checkbox checkbox-info">
+                                                <input type="checkbox" class="material-inputs" id="contact-check-all">
+                                                <label class="" for="contact-check-all"></label>
+                                                <span class="new-control-indicator"></span>
+                                            </div>
+                                        </div>
+                                    </th>
+                                </thead>
+                                <tbody>
+                                    <!-- row -->
+                                    @if (count($unapproveds))
+                                        @foreach ($unapproveds as $item)
+                                        <tr class="search-items">
+                                            <td>
+                                                <span>{{$loop->iteration}}.</span>
+                                            </td>
+                                            <td>
+                                                <span>{{$item->shop->report_name}}</span>
+                                            </td>
+
+                                            <td>
+                                                <span class="badge badge-success">
+                                                    <input type="hidden" name="dates[]" value="{{$item->date}}">
+                                                    <a href="{{ route('checkattendance', $item->id)}}" class="text-white">
+                                                    {{\Carbon\Carbon::createFromFormat('Y-m-d', $item->date)->format('D jS M Y');}}
+                                                    </a>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span>{{$headcount[$item->date]}}</span>
+                                            </td>
+                                            <td>
+                                                <span>{{$attendancehrs[$item->date]}}</span>
+                                            </td>
+                                            <td>
+
+                                                <span>{{($overtimehrs[$item->date] > 0) ? $overtimehrs[$item->date] : "--";}}</span>
+                                            </td>
+                                            <td>
+                                                @if ($overtimehrs[$item->date] > 0)
+                                                    @if ($authhrs[$item->date] < $overtimehrs[$item->date])
+                                                        <span class="badge badge-danger">{{$authhrs[$item->date]}}</span>
+                                                    @else
+                                                        <span class="badge badge-info">{{$authhrs[$item->date]}}</span>
+                                                    @endif
+                                                @else
+                                                    <span>--</span>
+                                                @endif
+
+                                            </td>
+                                            <td>
+                                                <div class="n-chk align-self-center text-center">
+                                                    <div class="checkbox checkbox-info">
+                                                        <input type="checkbox" name="checkapprovals[]" value="{{$item->date}}" class="material-inputs contact-chkbox" id="checkbox{{$loop->iteration}}">
+                                                        <label class="" for="checkbox{{$loop->iteration}}"></label>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+
+                                    @endif
+
+                                    <!-- /.row -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {{ Form::close() }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+@endsection
+@section('after-styles')
+{{ Html::style('assets/libs/select2/dist/css/select2.min.css') }}
+ {{ Html::style('assets/extra-libs/toastr/dist/build/toastr.min.css') }}
+
+@endsection
+
+@section('after-scripts')
+{{ Html::script('assets/extra-libs/toastr/dist/build/toastr.min.js') }}
+{{ Html::script('assets/extra-libs/toastr/toastr-init.js') }}
+{{ Html::script('assets/libs/select2/dist/js/select2.full.min.js') }}
+{{ Html::script('assets/libs/select2/dist/js/select2.min.js') }}
+{{ Html::script('dist/js/pages/contact/contact.js') }}
+    {!! Toastr::message() !!}
+
+
+<script type="text/javascript">
+$(".select2").select2();
+</script>
+@endsection
+

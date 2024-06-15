@@ -1,0 +1,177 @@
+<?php
+
+namespace App\Http\Controllers\gcacvchecksheet;
+
+use App\Http\Controllers\Controller;
+use App\Models\gcaauditcategory\GcaAuditReportCategory;
+use App\Models\gcaquerytitle\GcaQueryTitle;
+use App\Models\gcasteps\GcaSteps;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use DataTables;
+use DB;
+use Log;
+
+class GcaCvChecksheetController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        //
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create(Request $request)
+    {
+       
+    if ($request->input('query_category')) {
+        $steps = GcaSteps::pluck('title', 'id');
+         $data = $request->all();
+        return view('gcachecksheetcv.create')->with(compact('steps', 'data'));
+    }
+    return view('gcachecksheetcv.create');
+    //->with(compact('gcacat'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        if (request()->ajax()) {
+            try {
+                $input = $request->except(['_token']);
+                $validator = Validator::make($request->all(), [
+                    'query_group_name' => 'bail|required',
+                    'title' => 'bail|required',
+                    'gca_stage_id' => 'bail|required',
+                ]);
+                // Check validation failure
+                $noerrors = true;
+                if ($validator->fails()) {
+                    $output = [
+                        'success' => false,
+                        'msg' => "Make sure you capture all required fields",
+                    ];
+                    $noerrors = false;
+                }
+
+
+                if (empty($input['quality_item'])) {
+                    $output = [
+                        'success' => false,
+                        'msg' => "Make sure capture category",
+                    ];
+                    $noerrors = false;
+                }
+
+
+
+                if ($noerrors) {
+                    DB::beginTransaction();
+                    $input['vehicle_type']='CV';
+                    $result = GcaQueryTitle::create($input);
+
+                  
+                    $data = [];
+                    foreach ($request->input('quality_item') as $key => $val) {
+                        $data[] = array(
+                          'name' => $val,
+                          'gca_audit_report_category_id' => $input['gca_audit_report_category_id'][$key],
+                          'position' => $input['position'][$key]
+                          
+                        );
+                      
+                      }
+                     
+                      $result->querycategories()->createMany($data);
+                    DB::commit();
+                    $output = [
+                      'success' => true,
+                      'msg' => "Query Category Successfully"
+                    ];
+
+              
+
+
+                }
+
+        
+            
+            } catch (\Exception $e) {
+              DB::rollBack();
+              \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+              $output = [
+                'success' => false,
+                'msg' => $e->getMessage(),
+              ];
+            }
+            return $output;
+         }
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
+    }
+    public function load_cv_category(Request $request)
+    {
+        $term = $request->term; // Search term from Select2
+
+        $data = GcaAuditReportCategory::get(['id', 'name']); // Adjust columns as needed
+
+        return response()->json($data);
+    }
+    
+}

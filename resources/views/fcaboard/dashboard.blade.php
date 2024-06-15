@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html class="loading dark-layout" lang="en" data-layout="dark-layout" data-textdirection="ltr">
+<!-- BEGIN: Head-->
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=0,minimal-ui">
+    <meta name="description" content="Vuexy admin is super flexible, powerful, clean &amp; modern responsive bootstrap 4 admin template with unlimited possibilities.">
+    <meta name="keywords" content="admin template, Vuexy admin template, dashboard template, flat admin template, responsive admin template, web app">
+    <meta name="author" content="PIXINVENT">
+    <title>GCA  DASHBOARD</title>
+    <link rel="apple-touch-icon" href="{{asset('fcboard/app-assets/images/ico/apple-icon-120.png')}}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{asset('fcboard/app-assets/images/ico/favicon.ico')}}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500;1,600" rel="stylesheet">
+
+    <!-- BEGIN: Vendor CSS-->
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/vendors/css/vendors.min.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/vendors/css/charts/apexcharts.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/vendors/css/extensions/toastr.min.css')}}">
+    <!-- END: Vendor CSS-->
+
+    <!-- BEGIN: Theme CSS-->
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/css/bootstrap.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/css/bootstrap-extended.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/css/colors.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/css/components.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/css/themes/dark-layout.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/css/themes/bordered-layout.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/css/themes/semi-dark-layout.css')}}">
+
+    <!-- BEGIN: Page CSS-->
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/css/core/menu/menu-types/vertical-menu.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/css/pages/dashboard-ecommerce.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/css/plugins/charts/chart-apex.css')}}">
+    <link rel="stylesheet" type="text/css" href="{{asset('fcboard/app-assets/css/plugins/extensions/ext-component-toastr.css')}}">
+    <!-- END: Page CSS-->
+
+    <!-- BEGIN: Custom CSS-->
+    <link rel="stylesheet" type="text/css" href="{{asset('assets/css/style.css')}}">
+    <!-- END: Custom CSS-->
+
+</head>
+<!-- END: Head-->
+
+<!-- BEGIN: Body-->
+@php
+$date_formated=date_create($date);
+$mormated_date= date_format($date_formated,"F Y");
+
+if($heading=='drl'){
+    $route='gcadrl';
+
+}else if($heading=='drr'){
+    $route='gcadrr';
+
+}else if($heading=='care'){
+    $route='gcacare';
+}else{
+    $route=$heading;
+
+}
+
+   
+@endphp
+
+<body class="vertical-layout vertical-menu-modern 1-column navbar-floating footer-static  " data-open="click" data-menu="vertical-menu-modern" data-col="1-column">
+
+    <!-- BEGIN: Header-->
+    <nav class="header-navbar navbar navbar-expand-lg align-items-center floating-nav navbar-dark navbar-shadow container-xxl">
+        <div class="navbar-container d-flex content">
+            <div class="bookmark-wrapper d-flex align-items-center">
+                <nav class="navbar navbar-expand-lg ">
+                    
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                      <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                      <div class="navbar-nav">
+                        <a class="nav-item nav-link  {{ ($heading == 'drl') ? 'active' : '' }} " href="{{ route('gcadrl', [date_for_database($date)]) }}">DRL <span class="badge rounded-pill bg-primary">{{ $drl_count }}</span></a>
+                        <a class="nav-item nav-link {{ ($heading == 'drr') ? 'active' : '' }}" href="{{ route('gcadrr', [date_for_database($date)]) }}">DRR <span class="badge rounded-pill bg-info">{{ $drr_count }}</span></a>
+                        <a class="nav-item nav-link  {{ ($heading == 'care') ? 'active' : '' }} " href="{{ route('gcacare', [date_for_database($date)]) }}">CARE <span class="badge rounded-pill bg-success">{{ $care_count }}</span></a>
+                        <a class="nav-item nav-link  {{ ($heading == 'cv-gca') ? 'active' : '' }}" href="{{ route('cv-gca', [date_for_database($date)]) }}">CV GCA <span class="badge rounded-pill bg-warning">{{ $gca_cv_count }}</span></a>
+                        <a class="nav-item nav-link  {{ ($heading == 'lcv-gca') ? 'active' : '' }}" href="{{ route('lcv-gca', [date_for_database($date)]) }}">LCV GCA <span class="badge rounded-pill bg-warning">{{ $gca_lcv_count }}</span></a>
+
+                       
+                      </div>
+                    </div>
+                  </nav>
+            </div>
+            <ul class="nav navbar-nav align-items-center ms-auto"> <h2 class="text-success">{{ strtoupper($heading) }} </h2></ul>
+            <ul class="nav navbar-nav align-items-center ms-auto">
+                <li class="nav-item dropdown dropdown-language">
+                    <a class="nav-link dropdown-toggle" id="dropdown-flag" href="#" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Select Date<span class="selected-language text-warning"> {{ dateFormat( $date) }} </span></a>
+                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-flag">
+                        @foreach ($dates as $value )
+                        <a class="dropdown-item" href="{{ route($route, $value->date) }}" data-language="en">{{ $value->date }}</a>   
+                        @endforeach
+                     
+                      
+                        
+                    </div>
+                </li>
+             
+          
+             
+            
+            
+            </ul>
+        </div>
+    </nav>
+
+
+
+ 
+
+    <!-- BEGIN: Content-->
+    <div class="app-content content ">
+        <div class="content-overlay"></div>
+        <div class="header-navbar-shadow"></div>
+        <div class="content-wrapper container-xxl p-0">
+            <div class="content-header row">
+            </div>
+            <div class="content-body">
+                <!-- Dashboard Ecommerce Starts -->
+                <section id="dashboard-ecommerce">
+                    
+                    @if ($heading=='drl')
+                    <div class="row match-height">
+                        <!-- Drl Start -->
+                        <div class="col-lg-9 col-12">
+                            <div class="card card-company-table">
+                                <div class="card-body p-0">
+                                    <div class="table-responsive ">
+        
+                                        <table class="table text-light">
+                                            <thead>
+                                                <tr>
+                                                    <th>DEfects</th>
+                                                    <th>Shop</th>
+                                                    <th>Lot & Job</th>
+                                                    <th>Model</th>
+                                                    <th>Weight</th>
+                                                   
+                                                </tr>
+                                            </thead>
+                                            <tbody >
+                                                @foreach ( $drl_dashboard as $data )
+                                                    
+                                              
+                                                <tr>
+                                                    <td>
+                                                        <h4 class="text-light">{{ $data->defect }}</h4>
+                                                    </td>
+                                                    <td>
+                                                        <h4 class="text-light">{{ $data->shop }}</h4>
+                                                    </td>
+                                                    <td >
+                                                        <h4 class="text-light">{{ $data->lot_job }}</h4>
+                                                    </td>
+                                                    <td> <h4 class="text-light">{{ $data->model }}</h4></td>
+                                                    <td> <h4 class="text-light">{{ $data->weight }}</h4></td>
+                                                
+                                                </tr>
+                                                @endforeach
+                                                
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--/ Company Table Card -->
+
+                       <!-- Goal Overview Card -->
+                       <div class="col-lg-3 col-md-6 col-12">
+                        <div class="card">
+                           
+
+                            <h4 class="card-title text-center text-uppercase text-light pt-1 ">Goal Overview</h4>
+                            <div class="card-body p-0">
+                                @if (drl_today($date)['drl']  >=drl_today($date)['drl_target_value']  )
+                                <div class="text-center"> <span id="MTDdrlfrown"   style="color:red"> <i style=" width: 100px;height: 100px;"  data-feather='frown'></i></span></div>
+                                    
+                                @else
+                                <div class="text-center"> <span id="MTDdrlfrown"   style="color:rgb(3, 206, 3);"> <i style=" width: 100px;height: 100px;"  data-feather='smile'></i></span></div>
+                                    
+                                @endif
+                           
+                                <div class="row border-top text-center mx-0">
+                                    <div class="col-8 border-end py-1">
+                                        <div class="row">
+                                        <div class="col-6 border-end py-1">
+                                            <p class="card-text text-muted mb-0">DAILY</p>
+                                            <h3 class="fw-bolder mb-0">{{ drl_today($date)['drl'] }}</h3>
+                                        </div>
+                                        <div class="col-6 py-1">
+                                            <p class="card-text text-muted mb-0">MTD</p>
+                                            <h3 class="fw-bolder mb-0 text-light">{{ month_to_date_drl($mormated_date)['drl'] }}</h3>
+                                        </div>
+                                        </div>
+                                       
+                                       
+                                    </div>
+                                   
+                                    <div   class="col-4 py-1 pt-1">
+                                        <p class="card-text text-muted mb-0 pt-1">Target</p>
+                                        <h3 class="fw-bolder mb-0 text-light">{{ drl_today($date)['drl_target_value'] }}</h3>
+                                   
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  
+                    </div>
+
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="card">
+                             
+                                <h4 class="card-title text-center text-uppercase pt-1 ">MTD TREND </h4>
+                                <div class="card-body text-light ">
+                                    <canvas class="bar-chart-ex chartjs " data-height="400"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-12">
+                            <div class="card card-browser-states">
+                               
+
+                                <h4 class="card-title text-center text-uppercase text-light pt-1 ">Follow Up(s)</h4>
+                                <div class="card-body ">
+                                    @php
+                                        $i=0;
+                                    @endphp
+                                    @foreach ($followups as $followup )
+                                    @php
+                                        $i++;
+                                    @endphp
+                                        
+                                   
+                                    <div class="browser-states">
+                                        <div class="d-flex flex-row">
+                                           
+                                            <h4 class="align-self-center mb-0 text-info">{{ $i }}. {{ $followup->note }}</h4>
+                                        </div>
+                                     
+                                    </div>
+                                    @endforeach
+                                
+                                
+                                </div>
+                            </div>
+                        </div>
+                          <!-- End Drl  -->
+                          @elseif ($heading=='drr')
+
+                          <div class="row match-height">
+                            <!-- Drr Start -->
+                            <div class="col-lg-9 col-12">
+                                <div class="card card-company-table">
+                                    <div class="card-body p-0">
+                                        <div class="table-responsive">
+            
+                                            <table class="table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Defects</th>
+                                                        <th>Shop</th>
+                                                        <th>Lot & Job</th>
+                                                        <th>Model</th>
+                                                        <th>Weight</th>
+                                                       
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach ( $drr_dashboard as $data )
+                                                        
+                                                  
+                                                    <tr>
+                                                        <td>
+                                                            <h4 class="text-light">{{ $data->defect }}</h4>
+                                                        </td>
+                                                        <td>
+                                                            <h4 class="text-light">{{ $data->shop }}</h4>
+                                                        </td>
+                                                        <td >
+                                                            <h4 class="text-light">{{ $data->lot_job }}</h4>
+                                                        </td>
+                                                        <td> <h4 class="text-light">{{ $data->model }}</h4></td>
+                                                        <td> <h4 class="text-light">{{ $data->weight }}</h4></td>
+                                                    
+                                                    </tr>
+                                                    @endforeach
+                                                    
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--/ Company Table Card -->
+    
+                           <!-- Goal Overview Card -->
+                           
+                           <div class="col-lg-3 col-md-6 col-12">
+                            <div class="card">
+                               
+
+                                <h4 class="card-title text-center text-uppercase text-light pt-1 ">Goal Overview</h4>
+                                <div class="card-body p-0">
+                                    @if (today_drr($date)['plant_drr'] < today_drr($date)['drr_target_value']  )
+                                    <div class="text-center"> <span id="MTDdrlfrown"   style="color:red"> <i style=" width: 100px;height: 100px;"  data-feather='frown'></i></span></div>
+                                        
+                                    @else
+                                    <div class="text-center"> <span id="MTDdrlfrown"   style="color:rgb(3, 206, 3);"> <i style=" width: 100px;height: 100px;"  data-feather='smile'></i></span></div>
+                                        
+                                    @endif
+
+                                    <div class="row border-top text-center mx-0">
+                                        <div class="col-8 border-end py-1">
+                                            <div class="row">
+                                            <div class="col-6 border-end py-1">
+                                                <p class="card-text text-muted mb-0">DAILY</p>
+                                                <h3 class="fw-bolder mb-0">{{ today_drr($date)['plant_drr'] }}</h3>
+                                            </div>
+                                            <div class="col-6 py-1">
+                                                <p class="card-text text-muted mb-0">MTD</p>
+                                                <h3 class="fw-bolder mb-0 text-light">{{month_to_date_drr()['plant_drr']}}</h3>
+                                            </div>
+                                            </div>
+                                           
+                                           
+                                        </div>
+                                       
+                                        <div   class="col-4 py-1 pt-1">
+                                            <p class="card-text text-muted mb-0 pt-1">Target</p>
+                                            <h3 class="fw-bolder mb-0 text-light">{{ today_drr($date)['drr_target_value'] }}</h3>
+                                       
+                                        </div>
+                                    </div>
+
+
+
+                                </div>
+                            </div>
+                        </div>
+                      
+                        </div>
+
+
+
+                        <div class="row">
+                            <div class="col-9">
+                                <div class="card">
+                                   
+
+                                    <h4 class="card-title text-center text-uppercase pt-1 ">MTD TREND </h4>
+                                    <div class="card-body">
+                                        <canvas class="bar-chart-ex chartjs" data-height="400"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-3 col-md-6 col-12">
+                                <div class="card card-browser-states">
+                                   
+                                    <h4 class="card-title text-center text-uppercase text-light pt-1 ">Follow Up(s)</h4>
+                                    <div class="card-body ">
+                                        @php
+                                            $i=0;
+                                        @endphp
+                                        @foreach ($followups as $followup )
+                                        @php
+                                            $i++;
+                                        @endphp
+                                            
+                                       
+                                        <div class="browser-states">
+                                            <div class="d-flex flex-row">
+                                               
+                                                <h6 class="align-self-center mb-0 text-info">{{ $i }}. {{ $followup->note }}</h6>
+                                            </div>
+                                         
+                                        </div>
+                                        @endforeach
+                                    
+                                    
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                    <!-- End Drr -->
+                      @elseif ($heading=='care')
+
+                      <div class="row match-height">
+                        <!-- Care Start -->
+                        <div class="col-lg-9 col-12">
+                            <div class="card card-company-table">
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+        
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Defects</th>
+                                                    <th>Shop</th>
+                                                    <th>Lot & Job</th>
+                                                    <th>Model</th>
+                                                    <th>Weight</th>
+                                                   
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ( $care_dashboard as $data )
+                                                    
+                                              
+                                                <tr>
+                                                    <td>
+                                                        <h4 class="text-light">{{ $data->defect }}</h4>
+                                                    </td>
+                                                    <td>
+                                                        <h4 class="text-light">{{ $data->shop }}</h4>
+                                                    </td>
+                                                    <td >
+                                                        <h4 class="text-light">{{ $data->lot_job }}</h4>
+                                                    </td>
+                                                    <td> <h4 class="text-light">{{ $data->model }}</h4></td>
+                                                    <td> <h4 class="text-light">{{ $data->weight }}</h4></td>
+                                                
+                                                </tr>
+                                                @endforeach
+                                                
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--/ Company Table Card -->
+
+                       <!-- Goal Overview Card -->
+                       <div class="col-lg-3 col-md-6 col-12">
+                        <div class="card">
+                          
+
+                            <h4 class="card-title text-center text-uppercase text-light pt-1 ">Goal Overview</h4>
+                            <div class="card-body p-0">
+                                @if (today_drr($date)['care'] < 100  )
+                                <div class="text-center"> <span id="MTDdrlfrown"   style="color:red"> <i style=" width: 100px;height: 100px;"  data-feather='frown'></i></span></div>
+                                    
+                                @else
+                                <div class="text-center"> <span id="MTDdrlfrown"   style="color:rgb(3, 206, 3);"> <i style=" width: 100px;height: 100px;"  data-feather='smile'></i></span></div>
+                                    
+                                @endif
+
+                                <div class="row border-top text-center mx-0">
+                                    <div class="col-8 border-end py-1">
+                                        <div class="row">
+                                        <div class="col-6 border-end py-1">
+                                            <p class="card-text text-muted mb-0">DAILY</p>
+                                            <h3 class="fw-bolder mb-0 text-light">{{  today_drr($date)['care']  }}</h3>
+                                        </div>
+                                        <div class="col-6 py-1">
+                                            <p class="card-text text-muted mb-0">MTD</p>
+                                            <h3 class="fw-bolder mb-0 text-light">{{month_to_date_drr()['care']}}</h3>
+                                        </div>
+                                        </div>
+                                       
+                                       
+                                    </div>
+                                   
+                                    <div   class="col-4 py-1 pt-1">
+                                        <p class="card-text text-muted mb-0 pt-1">Target</p>
+                                        <h3 class="fw-bolder mb-0 text-light">100</h3>
+                                   
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                  
+                    </div>
+
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="card">
+                               
+
+                                <h4 class="card-title text-center text-uppercase pt-1 ">MTD TREND </h4>
+                                <div class="card-body">
+                                    <canvas class="bar-chart-ex chartjs" data-height="400"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-12">
+                            <div class="card card-browser-states">
+                               
+                                <h4 class="card-title text-center text-uppercase text-light pt-1 ">Follow Up(s)</h4>
+                                <div class="card-body ">
+                                    @php
+                                        $i=0;
+                                    @endphp
+                                    @foreach ($followups as $followup )
+                                    @php
+                                        $i++;
+                                    @endphp
+                                        
+                                   
+                                    <div class="browser-states">
+                                        <div class="d-flex flex-row">
+                                           
+                                            <h4 class="align-self-center mb-0 text-info">{{ $i }}. {{ $followup->note }}</h4>
+                                        </div>
+                                     
+                                    </div>
+                                    @endforeach
+                                
+                                
+                                </div>
+                            </div>
+                        </div>
+
+                      @elseif ($heading=='cv-gca')
+                      
+                      <div class="row match-height">
+                        <!-- Care Start -->
+                        <div class="col-lg-9 col-12">
+                            <div class="card card-company-table">
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+        
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Defects</th>
+                                                    <th>Shop</th>
+                                                    <th>Lot & Job</th>
+                                                    <th>Model</th>
+                                                    <th>Weight</th>
+                                                   
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ( $gca_dashboard as $data )
+                                                    
+                                              
+                                                <tr>
+                                                    <td>
+                                                        <h4 class="text-light">{{ $data->defect }}</h4>
+                                                    </td>
+                                                    <td>
+                                                        <h4 class="text-light">{{ $data->shop }}</h4>
+                                                    </td>
+                                                    <td >
+                                                        <h4 class="text-light">{{ $data->lot_job }}</h4>
+                                                    </td>
+                                                    <td> <h4 class="text-light">{{ $data->model }}</h4></td>
+                                                    <td> <h4 class="text-light">{{ $data->weight }}</h4></td>
+                                                
+                                                </tr>
+                                                @endforeach
+                                                
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--/ Company Table Card -->
+
+                       <!-- Goal Overview Card -->
+
+                       
+                       <div class="col-lg-3 col-md-6 col-12">
+                        <div class="card">
+                          
+
+                            <h4 class="card-title text-center text-uppercase text-light pt-1 ">Goal Overview</h4>
+                            <div class="card-body p-0">
+                                @if ($cvwdpvtarget <= $cv_wdpvscore  )
+                                <div class="text-center"> <span id="MTDdrlfrown"   style="color:red"> <i style=" width: 100px;height: 100px;"  data-feather='frown'></i></span></div>
+                                    
+                                @else
+                                <div class="text-center"> <span id="MTDdrlfrown"   style="color:rgb(3, 206, 3);"> <i style=" width: 100px;height: 100px;"  data-feather='smile'></i></span></div>
+                                    
+                                @endif
+                              
+                           
+                                <table width="100%" class="table table-sm table-striped text-center text-white w-100" style="color: white;">
+                                   
+                                    <tr>
+                                        <td></td>
+                                        <td>DPV</td>
+                                        <td>WDPV</td>
+                                        
+                                    </tr>
+                                    <tr style="font-size: 24px;">
+                                        <td style="font-size: 16px;">Target:</td>
+                                        <td ><h4 class="text-light">{{ $cvdpvtarget }}</h4> </td>
+                                        <td ><h4 class="text-light">{{ $cvwdpvtarget }}</h4></td>
+                                       
+                                    </tr>
+                                    <tr style="font-size: 24px;">
+                                        <td style="font-size: 16px;">Actual:</td>
+                                        <td ><h4 class="text-light">{{ $cv_dpvscore }}</h4></td>
+                                        <td ><h4 class="text-light">{{ $cv_wdpvscore }}</h4></td>
+                                      
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                  
+                    </div>
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="card">
+                               
+
+                                <h4 class="card-title text-center text-uppercase pt-1 ">MTD TREND </h4>
+                                <div class="card-body">
+                                    <canvas class="bar-chart-ex chartjs" data-height="400"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-12">
+                            <div class="card card-browser-states">
+                               
+                                <h4 class="card-title text-center text-uppercase text-light pt-1 ">Follow Up(s)</h4>
+                                <div class="card-body ">
+                                    @php
+                                        $i=0;
+                                    @endphp
+                                    @foreach ($followups as $followup )
+                                    @php
+                                        $i++;
+                                    @endphp
+                                        
+                                   
+                                    <div class="browser-states">
+                                        <div class="d-flex flex-row">
+                                           
+                                            <h4 class="align-self-center mb-0 text-info">{{ $i }}. {{ $followup->note }}</h4>
+                                        </div>
+                                     
+                                    </div>
+                                    @endforeach
+                                
+                                
+                                </div>
+                            </div>
+                        </div>
+
+                    @elseif ($heading=='lcv-gca')
+
+                    <div class="row match-height">
+                        <!-- Care Start -->
+                        <div class="col-lg-9 col-12">
+                            <div class="card card-company-table">
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+        
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Defects</th>
+                                                    <th>Shop</th>
+                                                    <th>Lot & Job</th>
+                                                    <th>Model</th>
+                                                    <th>Weight</th>
+                                                   
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ( $gca_dashboard as $data )
+                                                    
+                                              
+                                                <tr>
+                                                    <td>
+                                                        <h4 class="text-light">{{ $data->defect }}</h4>
+                                                    </td>
+                                                    <td>
+                                                        <h4 class="text-light">{{ $data->shop }}</h4>
+                                                    </td>
+                                                    <td >
+                                                        <h4 class="text-light">{{ $data->lot_job }}</h4>
+                                                    </td>
+                                                    <td> <h4 class="text-light">{{ $data->model }}</h4></td>
+                                                    <td> <h4 class="text-light">{{ $data->weight }}</h4></td>
+                                                
+                                                </tr>
+                                                @endforeach
+                                                
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--/ Company Table Card -->
+
+                       <!-- Goal Overview Card -->
+                       <div class="col-lg-3 col-md-6 col-12">
+                        <div class="card">
+                          
+
+                            <h4 class="card-title text-center text-uppercase text-light pt-1 ">Goal Overview</h4>
+                            <div class="card-body p-0">
+                                @if ($lcv_wdpvscore <= $lcvdpvtarget  )
+                                <div class="text-center"> <span id="MTDdrlfrown"   style="color:red"> <i style=" width: 100px;height: 100px;"  data-feather='frown'></i></span></div>
+                                    
+                                @else
+                                <div class="text-center"> <span id="MTDdrlfrown"   style="color:rgb(3, 206, 3);"> <i style=" width: 100px;height: 100px;"  data-feather='smile'></i></span></div>
+                                    
+                                @endif
+                              
+                           
+                                <table width="100%" class="table table-sm table-striped text-center text-white w-100" style="color: white;">
+                                 
+                                    <tr>
+                                        <td></td>
+                                        <td>DPV</td>
+                                        <td>WDPV</td>
+                                    </tr>
+                                    <tr style="font-size: 24px;">
+                                        <td style="font-size: 16px;">Target:</td>
+                                        <td ><h4 class="text-light">{{ $lcvdpvtarget }}</h4></td>
+                                        <td ><h4 class="text-light">{{ $lcvwdpvtarget }}</h4></td>
+                                    </tr>
+                                    <tr style="font-size: 24px;">
+                                        <td style="font-size: 16px;">Actual:</td>
+                                        <td ><h4 class="text-light">{{ $lcv_dpvscore }}</h4></td>
+                                        <td ><h4 class="text-light">{{ $lcv_wdpvscore }}</h4></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                  
+                    </div>
+
+                    <div class="row">
+                        <div class="col-9">
+                            <div class="card">
+                               
+
+                                <h4 class="card-title text-center text-uppercase pt-1 ">MTD TREND </h4>
+                                <div class="card-body">
+                                    <canvas class="bar-chart-ex chartjs" data-height="400"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6 col-12">
+                            <div class="card card-browser-states">
+                               
+                                <h4 class="card-title text-center text-uppercase text-light pt-1 ">Follow Up(s)</h4>
+                                <div class="card-body ">
+                                    @php
+                                        $i=0;
+                                    @endphp
+                                    @foreach ($followups as $followup )
+                                    @php
+                                        $i++;
+                                    @endphp
+                                        
+                                   
+                                    <div class="browser-states">
+                                        <div class="d-flex flex-row">
+                                           
+                                            <h4 class="align-self-center mb-0 text-info">{{ $i }}. {{ $followup->note }}</h4>
+                                        </div>
+                                     
+                                    </div>
+                                    @endforeach
+                                
+                                
+                                </div>
+                            </div>
+                        </div>
+
+                          @endif
+
+                
+                </section>
+                <!-- Dashboard Ecommerce ends -->
+
+            </div>
+        </div>
+    </div>
+    <!-- END: Content-->
+
+    <div class="sidenav-overlay"></div>
+    <div class="drag-target"></div>
+
+    <!-- BEGIN: Footer-->
+    <footer class="footer footer-static footer-light">
+        <p class="clearfix mb-0"><span class="float-md-start d-block d-md-inline-block mt-25">COPYRIGHT &copy; {{ date('Y') }}<a class="ms-25" href="#" target="_blank">ISUZU</a><span class="d-none d-sm-inline-block">, All rights Reserved</span></span><span class="float-md-end d-none d-md-block">GCA BOARD</span></p>
+    </footer>
+    <button class="btn btn-primary btn-icon scroll-top" type="button"><i data-feather="arrow-up"></i></button>
+    <!-- END: Footer-->
+
+
+    <!-- BEGIN: Vendor JS-->
+    <script src="{{asset('fcboard/app-assets/vendors/js/vendors.min.js')}}"></script>
+    <!-- BEGIN Vendor JS-->
+
+    <!-- BEGIN: Page Vendor JS-->
+    <script src="{{asset('fcboard/app-assets/vendors/js/charts/chart.min.js')}}"></script>
+
+    <!-- END: Page Vendor JS-->
+
+    <!-- BEGIN: Theme JS-->
+    <script src="{{asset('fcboard/app-assets/js/core/app-menu.js')}}"></script>
+    <script src="{{asset('fcboard/app-assets/js/core/app.js')}}"></script>
+   
+    <!-- END: Theme JS-->
+    <script type="text/javascript">
+        $(window).on('load', function() {
+            if (feather) {
+                feather.replace({
+                    width: 14,
+                    height: 14
+                });
+            }
+        })
+        var chartWrapper = $('.chartjs');
+ var  lineChartEx = $('.line-chart-ex');
+ var tooltipShadow = 'rgba(0, 0, 0, 0.25)';
+ var  grid_line_color = 'rgba(200, 200, 200, 0.2)'; // RGBA color helps in dark layout
+// var labelColor = '#6e6b7b';
+ var lineChartDanger = '#ff4961';
+ var lineChartPrimary = '#666ee8';
+ var warningColorShade = '#ffe802';
+
+
+ var barChartEx = $('.bar-chart-ex');
+ var grid_line_color = 'rgba(200, 200, 200, 0.2)'; // RGBA color helps in dark layout
+ var labelColor = '#ffffff';
+ var successColorShade = '#28dac6';
+ var tooltipShadow = 'rgba(0, 0, 0, 0.25)';
+        </script>
+
+    @if($heading=='drl'  )
+    <script type="text/javascript">
+
+      /*  setTimeout(function(){
+   window.location.reload(1);
+}, 30000);
+*/
+       
+
+  // Bar Chart
+  // --------------------------------------------------------------------
+  if (barChartEx.length) {
+    var barChartExample = new Chart(barChartEx, {
+      type: 'bar',
+    
+      data: {
+        labels:{!! json_encode($production_days)!!},
+        datasets: [
+            {
+            type: 'line',
+            data: {!! json_encode($graphdrl_target)!!},
+            label: 'Target',
+            borderColor: lineChartDanger,
+            lineTension: 0.5,
+            pointStyle: 'circle',
+            backgroundColor: lineChartDanger,
+            fill: false,
+            pointRadius: 1,
+            pointHoverRadius: 5,
+            pointHoverBorderWidth: 5,
+            pointBorderColor: 'transparent',
+            pointHoverBorderColor: window.colors.solid.white,
+            pointHoverBackgroundColor: lineChartDanger,
+            pointShadowOffsetX: 1,
+            pointShadowOffsetY: 1,
+            pointShadowBlur: 5,
+            pointShadowColor: tooltipShadow
+          },
+          {
+            data: {!! json_encode($graphdrl)!!},
+            label: 'Drl',
+            barThickness: 15,
+            backgroundColor: successColorShade,
+            borderColor: 'transparent'
+          }
+        ]
+      },
+      options: {
+        elements: {
+          rectangle: {
+            borderWidth: 2,
+            borderSkipped: 'bottom'
+          }
+        },
+        
+        responsive: true,
+        maintainAspectRatio: false,
+        responsiveAnimationDuration: 500,
+        legend: {
+          display: false
+        },
+        tooltips: {
+          // Updated default tooltip UI
+          shadowOffsetX: 1,
+          shadowOffsetY: 1,
+          shadowBlur: 8,
+          shadowColor: tooltipShadow,
+          backgroundColor: window.colors.solid.white,
+          titleFontColor: window.colors.solid.black,
+          bodyFontColor: window.colors.solid.black
+        },
+        scales: {
+          xAxes: [
+            {
+              display: true,
+              gridLines: {
+                display: true,
+                color: grid_line_color,
+                zeroLineColor: grid_line_color,
+                
+              },
+              scaleLabel: {
+                display: true,
+                labelString: 'DATE',
+                fontColor: labelColor
+              },
+              ticks: {
+                fontColor: labelColor
+              }
+            }
+          ],
+          yAxes: [
+            {
+              display: true,
+            
+              
+              gridLines: {
+                color: grid_line_color,
+                zeroLineColor: grid_line_color
+              },
+              scaleLabel: {
+        display: true,
+        labelString: 'PPH',
+        fontColor: labelColor
+      },
+              ticks: {
+                stepSize: 50,
+                min: 0,
+                max: 200,
+                fontColor: labelColor
+              }
+            }
+          ]
+        }
+      }
+    });
+  }
+  
+
+    </script>
+    @elseif ($heading=='drr')
+    <script type="text/javascript">
+
+       
+    // Bar Chart
+    // --------------------------------------------------------------------
+    if (barChartEx.length) {
+      var barChartExample = new Chart(barChartEx, {
+        type: 'bar',
+      
+        data: {
+          labels:{!! json_encode($production_days)!!},
+          datasets: [
+              {
+              type: 'line',
+              data: {!! json_encode($graphdrl_target)!!},
+              label: 'Target',
+              borderColor: lineChartDanger,
+              lineTension: 0.5,
+              pointStyle: 'circle',
+              backgroundColor: lineChartDanger,
+              fill: false,
+              pointRadius: 1,
+              pointHoverRadius: 5,
+              pointHoverBorderWidth: 5,
+              pointBorderColor: 'transparent',
+              pointHoverBorderColor: window.colors.solid.white,
+              pointHoverBackgroundColor: lineChartDanger,
+              pointShadowOffsetX: 1,
+              pointShadowOffsetY: 1,
+              pointShadowBlur: 5,
+              pointShadowColor: tooltipShadow
+            },
+            {
+              data: {!! json_encode($graphdrl)!!},
+              label: 'Drl',
+              barThickness: 15,
+              backgroundColor: successColorShade,
+              borderColor: 'transparent'
+            }
+          ]
+        },
+        options: {
+          elements: {
+            rectangle: {
+              borderWidth: 2,
+              borderSkipped: 'bottom'
+            }
+          },
+          
+          responsive: true,
+          maintainAspectRatio: false,
+          responsiveAnimationDuration: 500,
+          legend: {
+            display: false
+          },
+          tooltips: {
+            // Updated default tooltip UI
+            shadowOffsetX: 1,
+            shadowOffsetY: 1,
+            shadowBlur: 8,
+            shadowColor: tooltipShadow,
+            backgroundColor: window.colors.solid.white,
+            titleFontColor: window.colors.solid.black,
+            bodyFontColor: window.colors.solid.black
+          },
+          scales: {
+            xAxes: [
+              {
+                display: true,
+                gridLines: {
+                  display: true,
+                  color: grid_line_color,
+                  zeroLineColor: grid_line_color,
+                  
+                },
+                scaleLabel: {
+                  display: true,
+                  labelString: 'DATE',
+                  fontColor: labelColor
+                },
+                ticks: {
+                  fontColor: labelColor
+                }
+              }
+            ],
+            yAxes: [
+              {
+                display: true,
+                
+                gridLines: {
+                  color: grid_line_color,
+                  zeroLineColor: grid_line_color
+                },
+                scaleLabel: {
+          display: true,
+          labelString: 'SCORE(%)',
+          fontColor: labelColor
+        },
+                ticks: {
+                  stepSize: 25,
+                  min: 0,
+                  max: 100,
+                  fontColor: labelColor
+                }
+              }
+            ]
+          }
+        }
+      });
+    }
+    
+  
+      </script>
+       @elseif ($heading=='care')
+
+       <script type="text/javascript">
+
+     
+    // Bar Chart
+    // --------------------------------------------------------------------
+    if (barChartEx.length) {
+      var barChartExample = new Chart(barChartEx, {
+        type: 'bar',
+      
+        data: {
+          labels:{!! json_encode($production_days)!!},
+          datasets: [
+              {
+              type: 'line',
+              data: {!! json_encode($graphdrl_target)!!},
+              label: 'Target',
+              borderColor: lineChartDanger,
+              lineTension: 0.5,
+              pointStyle: 'circle',
+              backgroundColor: lineChartDanger,
+              fill: false,
+              pointRadius: 1,
+              pointHoverRadius: 5,
+              pointHoverBorderWidth: 5,
+              pointBorderColor: 'transparent',
+              pointHoverBorderColor: window.colors.solid.white,
+              pointHoverBackgroundColor: lineChartDanger,
+              pointShadowOffsetX: 1,
+              pointShadowOffsetY: 1,
+              pointShadowBlur: 5,
+              pointShadowColor: tooltipShadow
+            },
+            {
+              data: {!! json_encode($graphdrl)!!},
+              label: 'Drl',
+              barThickness: 15,
+              backgroundColor: successColorShade,
+              borderColor: 'transparent'
+            }
+          ]
+        },
+        options: {
+          elements: {
+            rectangle: {
+              borderWidth: 2,
+              borderSkipped: 'bottom'
+            }
+          },
+          
+          responsive: true,
+          maintainAspectRatio: false,
+          responsiveAnimationDuration: 500,
+          legend: {
+            display: false
+          },
+          tooltips: {
+            // Updated default tooltip UI
+            shadowOffsetX: 1,
+            shadowOffsetY: 1,
+            shadowBlur: 8,
+            shadowColor: tooltipShadow,
+            backgroundColor: window.colors.solid.white,
+            titleFontColor: window.colors.solid.black,
+            bodyFontColor: window.colors.solid.black
+          },
+          scales: {
+            xAxes: [
+              {
+                display: true,
+                gridLines: {
+                  display: true,
+                  color: grid_line_color,
+                  zeroLineColor: grid_line_color,
+                  
+                },
+                scaleLabel: {
+                  display: true,
+                  labelString: 'DATE',
+                  fontColor: labelColor
+                },
+                ticks: {
+                  fontColor: labelColor
+                }
+              }
+            ],
+            yAxes: [
+              {
+                display: true,
+                
+                gridLines: {
+                  color: grid_line_color,
+                  zeroLineColor: grid_line_color
+                },
+                scaleLabel: {
+          display: true,
+          labelString: 'SCORE(%)',
+          fontColor: labelColor
+        },
+                ticks: {
+                  stepSize: 25,
+                  min: 0,
+                  max: 100,
+                  fontColor: labelColor
+                }
+              }
+            ]
+          }
+        }
+      });
+    }
+    
+  
+      </script>
+
+@elseif ($heading=='cv-gca')
+<script type="text/javascript">
+
+
+// Bar Chart
+// --------------------------------------------------------------------
+if (barChartEx.length) {
+  var barChartExample = new Chart(barChartEx, {
+    type: 'bar',
+  
+    data: {
+      labels:{!! json_encode($production_days)!!},
+      datasets: [
+          {
+          type: 'line',
+          data: {!! json_encode($graphdrl_target)!!},
+          label: 'Target',
+          borderColor: lineChartDanger,
+          lineTension: 0.5,
+          pointStyle: 'circle',
+          backgroundColor: lineChartDanger,
+          fill: false,
+          pointRadius: 1,
+          pointHoverRadius: 5,
+          pointHoverBorderWidth: 5,
+          pointBorderColor: 'transparent',
+          pointHoverBorderColor: window.colors.solid.white,
+          pointHoverBackgroundColor: lineChartDanger,
+          pointShadowOffsetX: 1,
+          pointShadowOffsetY: 1,
+          pointShadowBlur: 5,
+          pointShadowColor: tooltipShadow
+        },
+        {
+          data: {!! json_encode($graphdrl)!!},
+          label: 'Drl',
+          barThickness: 15,
+          backgroundColor: successColorShade,
+          borderColor: 'transparent'
+        }
+      ]
+    },
+    options: {
+      elements: {
+        rectangle: {
+          borderWidth: 2,
+          borderSkipped: 'bottom'
+        }
+      },
+      
+      responsive: true,
+      maintainAspectRatio: false,
+      responsiveAnimationDuration: 500,
+      legend: {
+        display: false
+      },
+      tooltips: {
+        // Updated default tooltip UI
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 8,
+        shadowColor: tooltipShadow,
+        backgroundColor: window.colors.solid.white,
+        titleFontColor: window.colors.solid.black,
+        bodyFontColor: window.colors.solid.black
+      },
+      scales: {
+        xAxes: [
+          {
+            display: true,
+            gridLines: {
+              display: true,
+              color: grid_line_color,
+              zeroLineColor: grid_line_color,
+              
+            },
+            scaleLabel: {
+              display: true,
+              labelString: 'DATE',
+              fontColor: labelColor
+            },
+            ticks: {
+              fontColor: labelColor
+            }
+          }
+        ],
+        yAxes: [
+          {
+            display: true,
+            
+            gridLines: {
+              color: grid_line_color,
+              zeroLineColor: grid_line_color
+            },
+            scaleLabel: {
+      display: true,
+      labelString: 'SCORE',
+      fontColor: labelColor
+    },
+            ticks: {
+              stepSize: 20,
+              min: 0,
+              max: 100,
+              fontColor: labelColor
+            }
+          }
+        ]
+      }
+    }
+  });
+}
+
+
+  </script>
+  @elseif ($heading=='lcv-gca')
+  <script type="text/javascript">
+
+
+// Bar Chart
+// --------------------------------------------------------------------
+if (barChartEx.length) {
+  var barChartExample = new Chart(barChartEx, {
+    type: 'bar',
+  
+    data: {
+      labels:{!! json_encode($production_days)!!},
+      datasets: [
+          {
+          type: 'line',
+          data: {!! json_encode($graphdrl_target)!!},
+          label: 'Target',
+          borderColor: lineChartDanger,
+          lineTension: 0.5,
+          pointStyle: 'circle',
+          backgroundColor: lineChartDanger,
+          fill: false,
+          pointRadius: 1,
+          pointHoverRadius: 5,
+          pointHoverBorderWidth: 5,
+          pointBorderColor: 'transparent',
+          pointHoverBorderColor: window.colors.solid.white,
+          pointHoverBackgroundColor: lineChartDanger,
+          pointShadowOffsetX: 1,
+          pointShadowOffsetY: 1,
+          pointShadowBlur: 5,
+          pointShadowColor: tooltipShadow
+        },
+        {
+          data: {!! json_encode($graphdrl)!!},
+          label: 'Drl',
+          barThickness: 15,
+          backgroundColor: successColorShade,
+          borderColor: 'transparent'
+        }
+      ]
+    },
+    options: {
+      elements: {
+        rectangle: {
+          borderWidth: 2,
+          borderSkipped: 'bottom'
+        }
+      },
+      
+      responsive: true,
+      maintainAspectRatio: false,
+      responsiveAnimationDuration: 500,
+      legend: {
+        display: false
+      },
+      tooltips: {
+        // Updated default tooltip UI
+        shadowOffsetX: 1,
+        shadowOffsetY: 1,
+        shadowBlur: 8,
+        shadowColor: tooltipShadow,
+        backgroundColor: window.colors.solid.white,
+        titleFontColor: window.colors.solid.black,
+        bodyFontColor: window.colors.solid.black
+      },
+      scales: {
+        xAxes: [
+          {
+            display: true,
+            gridLines: {
+              display: true,
+              color: grid_line_color,
+              zeroLineColor: grid_line_color,
+              
+            },
+            scaleLabel: {
+              display: true,
+              labelString: 'DATE',
+              fontColor: labelColor
+            },
+            ticks: {
+              fontColor: labelColor
+            }
+          }
+        ],
+        yAxes: [
+          {
+            display: true,
+            
+            gridLines: {
+              color: grid_line_color,
+              zeroLineColor: grid_line_color
+            },
+            scaleLabel: {
+      display: true,
+      labelString: 'SCORE',
+      fontColor: labelColor
+    },
+            ticks: {
+              stepSize: 20,
+              min: 0,
+              max: 100,
+              fontColor: labelColor
+            }
+          }
+        ]
+      }
+    }
+  });
+}
+
+
+  </script>
+
+    @endif
+</body>
+<!-- END: Body-->
+
+</html>

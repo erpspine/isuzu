@@ -1,0 +1,24 @@
+<?php
+return [
+	'mode' => 'utf-8',
+	'format' => 'A4-L',
+    'margin_left' => 12,
+    'margin_right' => 12,
+    'margin_top' => 8,
+    'margin_bottom' => 12,
+    'margin_header' => 5,
+    'margin_footer' => 5,
+	'default_font_size'    => '12',
+	'default_font'         => 'sans-serif',
+	'orientation'          => 'L',
+	'title'                => 'PDF',
+	'author'               => '',
+	'watermark'            => '',
+	'show_watermark'       => false,
+	'watermark_font'       => 'sans-serif',
+	'watermark_text_alpha' => 0.1,
+	'custom_font_dir'      => '',
+	'custom_font_data' 	   => [],
+	'auto_language_detection'  => false,
+    'tempDir' =>storage_path().'/app/public/temp'
+];

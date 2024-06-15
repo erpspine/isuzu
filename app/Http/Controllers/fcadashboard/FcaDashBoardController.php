@@ -1,0 +1,502 @@
+<?php
+
+namespace App\Http\Controllers\fcadashboard;
+
+use App\Http\Controllers\Controller;
+use App\Models\drr\Drr;
+use App\Models\drrtarget\DrrTarget;
+use App\Models\fcaboard\FcaBoard;
+use App\Models\gcafollowup\GcaFollowup;
+use App\Models\gcascore\GcaScore;
+use App\Models\querydefect\Querydefect;
+use App\Models\unitmovement\Unitmovement;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
+use Illuminate\Http\Request;
+
+class FcaDashBoardController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        //
+    }
+    public function dashboard()
+    {
+        $lot = [];
+        $date = FcaBoard::max('date');
+        $heading = 'drl';
+        // dd($date);
+        $drl_dashboard = FcaBoard::where('date', $date)->where('report_type', 'Drl')->get();
+        $drr_count = FcaBoard::where('date', $date)->where('report_type', 'Drr')->count();
+        $care_count = FcaBoard::where('date', $date)->where('report_type', 'Care')->count();
+        $gca_cv_count = FcaBoard::where('date', $date)->where('report_type', 'gca_cv')->count();
+        $gca_lcv_count = FcaBoard::where('date', $date)->where('report_type', 'gca_lcv')->count();
+        $dates = FcaBoard::groupBy('date')->get('date');
+        $drl_count = count($drl_dashboard);
+        $startDate = Carbon::create($date)->startOfMonth();
+        $firstDayOfTheMonth = date_for_database($startDate->firstOfMonth());
+        $period = CarbonPeriod::create($firstDayOfTheMonth, $date);
+        $production_days = [];
+        $graphdrl = [];
+        $graphdrl_target = [];
+        foreach ($period as $row) {
+            //check if day exist
+            $pday = $row->format('Y-m-d');
+            $check_ixist = Unitmovement::where('datetime_in', $pday)->exists();
+            if ($check_ixist) {
+                $production_days[] =  $row->format('d/m');
+
+                $offlined_unit = Unitmovement::where('datetime_out', $pday)->where('current_shop', 0)->where('shop_id', 8)
+                    ->orWhere(function ($query) use ($pday) {
+                        $query->where('shop_id', 10)
+                            ->where('datetime_out', $pday)
+                            ->where('current_shop', 0);
+                    })->orWhere(function ($query) use ($pday) {
+                        $query->where('shop_id', 13)
+                            ->where('datetime_out', $pday)
+                            ->where('current_shop', 0);
+                    })->count();
+
+                $movement_array = Unitmovement::where([['current_shop', '=', 0]])->where('datetime_out', $pday)->whereHas('querydefects')->pluck('id')->all();
+                $total_defects = Querydefect::whereIn('unit_movement_id', $movement_array)->where('is_defect', 'Yes')->count();
+
+                $gdrl = 0;
+                if ($offlined_unit > 0) {
+                    $gdrl = round((($total_defects / $offlined_unit) * 100), 2);
+                }
+                $graphdrl[]=$gdrl;
+                
+
+                $graphdrl_target[] = drl_today($pday)['drl_target_value'];
+            }
+            $followups=GcaFollowup::where('status','Active')->get();
+        }
+       
+
+        return view('fcaboard.dashboard')->with(compact('drl_dashboard', 'date', 'drl_count', 'drr_count', 'care_count', 'gca_cv_count','gca_lcv_count', 'heading', 'dates','graphdrl_target','production_days','graphdrl','followups'));
+    }
+    public function gcadrl($date)
+    {
+        $lot = [];
+        $date = $date;
+        $heading = 'drl';
+        // dd($date);
+        $drl_dashboard = FcaBoard::where('date', $date)->where('report_type', 'Drl')->get();
+        $drr_count = FcaBoard::where('date', $date)->where('report_type', 'Drr')->count();
+        $care_count = FcaBoard::where('date', $date)->where('report_type', 'Care')->count();
+        $gca_cv_count = FcaBoard::where('date', $date)->where('report_type', 'gca_cv')->count();
+        $gca_lcv_count = FcaBoard::where('date', $date)->where('report_type', 'gca_lcv')->count();
+        $dates = FcaBoard::groupBy('date')->get('date');
+        $drl_count = count($drl_dashboard);
+        $startDate = Carbon::create($date)->startOfMonth();
+        $firstDayOfTheMonth = date_for_database($startDate->firstOfMonth());
+        $period = CarbonPeriod::create($firstDayOfTheMonth, $date);
+        $production_days = [];
+        $graphdrl = [];
+        $graphdrl_target = [];
+        foreach ($period as $row) {
+            //check if day exist
+            $pday = $row->format('Y-m-d');
+            $check_ixist = Unitmovement::where('datetime_in', $pday)->exists();
+            if ($check_ixist) {
+                $production_days[] =  $row->format('d/m');
+
+                $offlined_unit = Unitmovement::where('datetime_out', $pday)->where('current_shop', 0)->where('shop_id', 8)
+                    ->orWhere(function ($query) use ($pday) {
+                        $query->where('shop_id', 10)
+                            ->where('datetime_out', $pday)
+                            ->where('current_shop', 0);
+                    })->orWhere(function ($query) use ($pday) {
+                        $query->where('shop_id', 13)
+                            ->where('datetime_out', $pday)
+                            ->where('current_shop', 0);
+                    })->count();
+
+                $movement_array = Unitmovement::where([['current_shop', '=', 0]])->where('datetime_out', $pday)->whereHas('querydefects')->pluck('id')->all();
+                $total_defects = Querydefect::whereIn('unit_movement_id', $movement_array)->where('is_defect', 'Yes')->count();
+
+                $gdrl = 0;
+                if ($offlined_unit > 0) {
+                    $gdrl = round((($total_defects / $offlined_unit) * 100), 2);
+                }
+                $graphdrl[]=$gdrl;
+                
+
+                $graphdrl_target[] = drl_today($pday)['drl_target_value'];
+            }
+        }
+        $followups=GcaFollowup::where('status','Active')->get();
+       
+
+        return view('fcaboard.dashboard')->with(compact('drl_dashboard', 'date', 'drl_count', 'drr_count', 'care_count', 'gca_cv_count','gca_lcv_count', 'heading', 'dates','graphdrl_target','production_days','graphdrl','followups'));
+    }
+    public function gcadrr($date)
+    {
+        $lot = [];
+        $date = $date;
+        $heading = 'drr';
+        $drr_dashboard = FcaBoard::where('date', $date)->where('report_type', 'Drr')->get();
+        $drl_count = FcaBoard::where('date', $date)->where('report_type', 'Drl')->count();
+        $care_count = FcaBoard::where('date', $date)->where('report_type', 'Care')->count();
+        $gca_cv_count = FcaBoard::where('date', $date)->where('report_type', 'gca_cv')->count();
+        $gca_lcv_count = FcaBoard::where('date', $date)->where('report_type', 'gca_lcv')->count();
+        $dates = FcaBoard::groupBy('date')->get('date');
+        $drr_count = count($drr_dashboard);
+        $startDate = Carbon::create($date)->startOfMonth();
+        $firstDayOfTheMonth = date_for_database($startDate->firstOfMonth());
+        $period = CarbonPeriod::create($firstDayOfTheMonth, $date);
+        $production_days = [];
+        $graphdrl = [];
+        $graphdrl_target = [];
+        $shops_array=array(28,15,16);
+        
+        foreach ($period as $row) {
+            $pday = $row->format('Y-m-d');
+            
+            $drr_array=array();
+            $check_ixist = Unitmovement::where('datetime_in', $pday)->exists();
+            if ($check_ixist) {
+                $production_days[] =  $row->format('d/m');
+            foreach($shops_array as $val){
+        
+
+                $units_through_abc = Unitmovement::where('datetime_out',$pday)->where('current_shop',0)->where('shop_id', $val)->count();
+                $units_array = Unitmovement::where('datetime_out',$pday)->where('current_shop',0)->where('shop_id', $val)->pluck('vehicle_id')->all();
+        
+                $total_units_with_defects = Drr::where('use_drr','1')->wherein('vehicle_id', $units_array)->where('shop_id', $val)->count();
+                $ok_units=  $units_through_abc -$total_units_with_defects ;
+        
+        
+               $drr_pershop=0;
+        
+               if($units_through_abc >0){
+                
+        
+                $drr_pershop= round((($ok_units/$units_through_abc)*100),2);
+        
+               }
+        
+            
+        
+               $drr_array[] = $drr_pershop;
+        
+        
+            }
+
+            $drr_target=DrrTarget::where('target_type','Drr')->where('fromdate', '<', $pday)->where('todate', '>', $pday)->first();
+            $drr_target_value=0;
+     if(isset($drr_target)){
+         $drr_target_value=$drr_target->plant_target;
+  
+     }
+              $graphdrl_target[] =$drr_target_value;
+              $plant_drr=round( ( (($drr_array[0]*$drr_array[1]*$drr_array[2])/1000000)*100),2 );
+              $graphdrl[]=$plant_drr;
+        }
+           
+           
+
+
+        }
+    
+
+        $followups=GcaFollowup::where('status','Active')->get();
+        return view('fcaboard.dashboard')->with(compact('drr_dashboard', 'date', 'drl_count', 'drr_count', 'care_count', 'gca_cv_count','gca_lcv_count', 'heading', 'dates','graphdrl_target','production_days','graphdrl','followups'));
+    }
+    public function gcacare($date)
+    {
+        $lot = [];
+        $date = $date;
+        $heading = 'care';
+        $care_dashboard = FcaBoard::where('date', $date)->where('report_type', 'Care')->get();
+        $drl_count = FcaBoard::where('date', $date)->where('report_type', 'Drl')->count();
+        $drr_count = FcaBoard::where('date', $date)->where('report_type', 'Drr')->count();
+        $gca_cv_count = FcaBoard::where('date', $date)->where('report_type', 'gca_cv')->count();
+        $gca_lcv_count = FcaBoard::where('date', $date)->where('report_type', 'gca_lcv')->count();
+        $dates = FcaBoard::groupBy('date')->get('date');
+        $care_count = count($care_dashboard);
+        $startDate = Carbon::create($date)->startOfMonth();
+        $firstDayOfTheMonth = date_for_database($startDate->firstOfMonth());
+        $period = CarbonPeriod::create($firstDayOfTheMonth, $date);
+        $production_days = [];
+        $graphdrl = [];
+        $graphdrl_target = [];
+        $shops_array=array(28,15,16);
+        
+        foreach ($period as $row) {
+            $pday = $row->format('Y-m-d');
+            
+            $drr_array=array();
+            $check_ixist = Unitmovement::where('datetime_in', $pday)->exists();
+            if ($check_ixist) {
+                $production_days[] =  $row->format('d/m');
+            foreach($shops_array as $val){
+        
+
+                $units_through_abc = Unitmovement::where('datetime_out',$pday)->where('current_shop',0)->where('shop_id', $val)->count();
+                $units_array = Unitmovement::where('datetime_out',$pday)->where('current_shop',0)->where('shop_id', $val)->pluck('vehicle_id')->all();
+        
+                $total_units_with_defects = Drr::where('use_drr','1')->wherein('vehicle_id', $units_array)->where('shop_id', $val)->count();
+                $ok_units=  $units_through_abc -$total_units_with_defects ;
+        
+        
+               $drr_pershop=0;
+        
+               if($units_through_abc >0){
+                
+        
+                $drr_pershop= round((($ok_units/$units_through_abc)*100),2);
+        
+               }
+        
+            
+        
+               $drr_array[] = $drr_pershop;
+        
+        
+            }
+
+      
+              $graphdrl_target[] =100;
+              $plant_drr=round($drr_array[2],2 );
+              $graphdrl[]=$plant_drr;
+        }
+           
+           
+
+
+        }
+        
+    
+
+        $followups=GcaFollowup::where('status','Active')->get();
+        return view('fcaboard.dashboard')->with(compact('care_dashboard', 'date', 'drl_count', 'drr_count', 'care_count', 'gca_cv_count','gca_lcv_count', 'heading', 'dates','graphdrl_target','production_days','graphdrl','followups'));
+    }
+    public function cvgca($date)
+    {
+        $lot = [];
+        $date = $date;
+        $heading = 'cv-gca';
+        $gca_dashboard = FcaBoard::where('date', $date)->where('report_type', 'gca_cv')->get();
+        $drl_count = FcaBoard::where('date', $date)->where('report_type', 'Drl')->count();
+        $drr_count = FcaBoard::where('date', $date)->where('report_type', 'Drr')->count();
+        $care_count = FcaBoard::where('date', $date)->where('report_type', 'Care')->count();
+        $dates = FcaBoard::groupBy('date')->get('date');
+        $gca_cv_count = count($gca_dashboard);
+        $gca_lcv_count = FcaBoard::where('date', $date)->where('report_type', 'gca_lcv')->count();
+        //cv and lcv score
+        $cvsumdefects = GcaScore::where([['lcv_cv', '=', 'cv'], ['date', '=', $date]])->first();
+        $lcvsumdefects = GcaScore::where([['lcv_cv', '=', 'lcv'], ['date', '=', $date]])->first();
+        $cv_sumdefects = 0;
+        $cv_dpvscore = 0;
+        $cv_wdpvscore = 0;
+        if ($cvsumdefects) {
+            $cv_sumdefects = $cvsumdefects->defectcar1 + $cvsumdefects->defectcar2;
+            $cv_samplsz = $cvsumdefects->units_sampled;
+            $cv_dpvscore = ($cv_samplsz == 0) ? 0 : $cv_sumdefects / $cv_samplsz;
+            $cv_wdpvscore = $cvsumdefects->mtdwdpv;
+        }
+        $lcv_sumdefects = 0;
+        $lcv_dpvscore = 0;
+        $lcv_wdpvscore = 0;
+        if ($lcvsumdefects) {
+            $lcv_sumdefects = $lcvsumdefects->defectcar1 + $lcvsumdefects->defectcar2;
+            $lcv_samplsz = $lcvsumdefects->units_sampled;
+            $lcv_dpvscore = ($lcv_samplsz == 0) ? 0 : $cv_sumdefects / $lcv_samplsz;
+            $lcv_wdpvscore = $lcvsumdefects->mtdwdpv;
+        }
+        //GCA target
+        $cvdpvtarget = (getGCATarget($date) == '0') ? 0 : round(getGCATarget($date)->cvdpv, 1);
+        $cvwdpvtarget = (getGCATarget($date) == '0') ? 0 : round(getGCATarget($date)->cvwdpv, 1);
+       
+
+        $startDate = Carbon::create($date)->startOfMonth();
+        $firstDayOfTheMonth = date_for_database($startDate->firstOfMonth());
+        $period = CarbonPeriod::create($firstDayOfTheMonth, $date);
+        $production_days = [];
+        $graphdrl = [];
+        $graphdrl_target = [];
+        $shops_array=array(28,15,16);
+        
+        foreach ($period as $row) {
+            $pday = $row->format('Y-m-d');
+            
+            $drr_array=array();
+            $check_ixist = Unitmovement::where('datetime_in', $pday)->exists();
+            if ($check_ixist) {
+                $production_days[] =  $row->format('d/m');
+
+                $cvsumdefects = GcaScore::where([['lcv_cv', '=', 'cv'], ['date', '=', $pday]])->first();
+                $cv_sumdefects = 0;
+                $cv_dpvscore = 0;
+                $cv_wdpvscore = 0;
+                if ($cvsumdefects) {
+                    $cv_sumdefects = $cvsumdefects->defectcar1 + $cvsumdefects->defectcar2;
+                    $cv_samplsz = $cvsumdefects->units_sampled;
+                    $cv_dpvscore = ($cv_samplsz == 0) ? 0 : $cv_sumdefects / $cv_samplsz;
+                    $cv_wdpvscore = $cvsumdefects->mtdwdpv;
+                }
+
+                $graphdrl_target[] =(getGCATarget($pday) == '0') ? 0 : round(getGCATarget($date)->cvwdpv, 1);
+               
+                $graphdrl[]=$cv_wdpvscore;
+          
+
+      
+             
+        }
+           
+           
+
+
+        }
+
+
+        $followups=GcaFollowup::where('status','Active')->get();
+
+        return view('fcaboard.dashboard')->with(compact('gca_dashboard', 'date', 'drl_count', 'drr_count', 'care_count', 'gca_cv_count','gca_lcv_count', 'heading', 'dates', 'cvdpvtarget', 'cvwdpvtarget', 'cv_dpvscore', 'cv_wdpvscore','graphdrl_target','production_days','graphdrl','followups'));
+    }
+
+    public function lcvgca($date)
+    {
+        $lot = [];
+        $date = $date;
+        $heading = 'lcv-gca';
+        $gca_dashboard = FcaBoard::where('date', $date)->where('report_type', 'gca_lcv')->get();
+        $drl_count = FcaBoard::where('date', $date)->where('report_type', 'Drl')->count();
+        $drr_count = FcaBoard::where('date', $date)->where('report_type', 'Drr')->count();
+        $care_count = FcaBoard::where('date', $date)->where('report_type', 'Care')->count();
+        $dates = FcaBoard::groupBy('date')->get('date');
+        $gca_lcv_count = count($gca_dashboard);
+        $gca_cv_count = FcaBoard::where('date', $date)->where('report_type', 'gca_cv')->count();
+        //cv and lcv score
+        $cvsumdefects = GcaScore::where([['lcv_cv', '=', 'cv'], ['date', '=', $date]])->first();
+        $cv_sumdefects = 0;
+        $cv_dpvscore = 0;
+        $cv_wdpvscore = 0;
+        if ($cvsumdefects) {
+            $cv_sumdefects = $cvsumdefects->defectcar1 + $cvsumdefects->defectcar2;
+            $cv_samplsz = $cvsumdefects->units_sampled;
+            $cv_dpvscore = ($cv_samplsz == 0) ? 0 : $cv_sumdefects / $cv_samplsz;
+            $cv_wdpvscore = $cvsumdefects->mtdwdpv;
+        }
+      
+        //GCA target
+        $lcvdpvtarget = (getGCATarget($date) == '0') ? 0 : round(getGCATarget($date)->lcvdpv, 1);
+        $lcvwdpvtarget = (getGCATarget($date) == '0') ? 0 : round(getGCATarget($date)->lcvwdpv, 1);
+ 
+
+        $startDate = Carbon::create($date)->startOfMonth();
+        $firstDayOfTheMonth = date_for_database($startDate->firstOfMonth());
+        $period = CarbonPeriod::create($firstDayOfTheMonth, $date);
+        $production_days = [];
+        $graphdrl = [];
+        $graphdrl_target = [];
+        $shops_array=array(28,15,16);
+        
+        foreach ($period as $row) {
+            $pday = $row->format('Y-m-d');
+            
+            $drr_array=array();
+            $check_ixist = Unitmovement::where('datetime_in', $pday)->exists();
+            if ($check_ixist) {
+                $production_days[] =  $row->format('d/m');
+
+                $lcvsumdefects = GcaScore::where([['lcv_cv', '=', 'lcv'], ['date', '=', $pday]])->first();
+                $lcv_sumdefects = 0;
+        $lcv_dpvscore = 0;
+        $lcv_wdpvscore = 0;
+        if ($lcvsumdefects) {
+            $lcv_sumdefects = $lcvsumdefects->defectcar1 + $lcvsumdefects->defectcar2;
+            $lcv_samplsz = $lcvsumdefects->units_sampled;
+            $lcv_dpvscore = ($lcv_samplsz == 0) ? 0 : $cv_sumdefects / $lcv_samplsz;
+            $lcv_wdpvscore = $lcvsumdefects->mtdwdpv;
+        }
+
+                $graphdrl_target[] =(getGCATarget($pday) == '0') ? 0 : round(getGCATarget($pday)->lcvwdpv, 1);;
+               
+                $graphdrl[]=$lcv_wdpvscore;
+          
+
+      
+             
+        }
+           
+           
+
+
+        }
+
+     
+        
+    
+
+        $followups=GcaFollowup::where('status','Active')->get();
+        return view('fcaboard.dashboard')->with(compact('gca_dashboard', 'date', 'drl_count', 'drr_count', 'care_count', 'gca_cv_count','gca_lcv_count', 'heading', 'dates','lcvdpvtarget', 'lcvwdpvtarget','lcv_dpvscore', 'lcv_wdpvscore','graphdrl_target','production_days','graphdrl','followups'));
+    }
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+    }
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
+    }
+}

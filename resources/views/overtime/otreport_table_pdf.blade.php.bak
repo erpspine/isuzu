@@ -1,0 +1,282 @@
+<html>
+
+<head>
+    <style>
+        body {
+            Century Gothic", CenturyGothic, AppleGothic, sans-serif;
+font-size: 9pt;
+        }
+
+        p {
+            margin: 0pt;
+        }
+
+        table.items {
+            border: 0.1mm solid #000000;
+        }
+
+        table {
+            font-family: "Century Gothic", CenturyGothic, AppleGothic, sans-serif;
+            font-size: 13pt;
+        }
+
+        td {
+            vertical-align: top;
+        }
+
+        .items td {
+            border-left: 0.1mm solid #000000;
+            border-right: 0.1mm solid #000000;
+        }
+
+        table thead td {
+            background-color: #EEEEEE;
+            text-align: center;
+            border: 0.1mm solid #000000;
+            font-variant: small-caps;
+        }
+
+        .items td.blanktotal {
+            background-color: #EEEEEE;
+            border: 0.1mm solid #000000;
+            background-color: #FFFFFF;
+            border: 0mm none #000000;
+            border-top: 0.1mm solid #000000;
+            border-right: 0.1mm solid #000000;
+        }
+
+        .items td.totals {
+            text-align: right;
+            border: 0.1mm solid #000000;
+        }
+
+        .items td.totalsy {
+            border: 0.1mm solid #000000;
+        }
+
+        .headings {
+            font-size: 19pt;
+        }
+
+        .items td.totalss {
+            text-align: right;
+            border: 0.1mm solid #000000;
+            text-transform: uppercase;
+        }
+
+        .items td.cost {
+            text-align: "."center;
+            text-transform: uppercase;
+        }
+
+        .invoice-title h1 {
+            font-size: 50px;
+            font-weight: lighter;
+            text-align: center;
+            margin: 0;
+            text-transform: uppercase;
+            padding: 5px;
+            letter-spacing: 2px;
+        }
+
+        .itemss {
+            text-transform: uppercase;
+            border: 0.1mm solid #000000;
+        }
+
+        .headerData {
+            text-align: center;
+            vertical-align: middle;
+            text-transform: uppercase;
+        }
+
+        .dotted td {
+            border-bottom: 0.1mm solid #000000;
+        }
+
+        .mycolor td {
+            color: #000000;
+        }
+
+        table.print-friendly tr td,
+        table.print-friendly tr th {
+            page-break-inside: auto !important;
+        }
+    </style>
+</head>
+
+<body>
+    <htmlpagefooter name="myfooter">
+        <div style="border-top: 1px solid #000000; font-size: 8pt; text-align: center; padding-top: 3mm;width:100%">
+            <div style="float:left; width:33% ">
+                Printed By: {{ $printed_by }}
+            </div>
+            <div style="float:left; width:33% ">
+                Printed On: {{ date('d/m/Y') }}
+            </div>
+            <div style="float:left;width:33% ">
+                Page {PAGENO} of {nb}
+            </div>
+        </div>
+    </htmlpagefooter>
+    <sethtmlpagefooter name="myfooter" value="on" />
+    <table width="100%" style="font-size: 11pt;color:#000000;">
+        <tr>
+            <td width="20%">
+            </td>
+            <td width="60%" class="headerData">
+                <h2>Isuzu East Africa Ltd</h2><br>P.O. Box 30527 Nairobi GPO, 00100 Kenya <br>Tel: 0800 724 724<br>
+                <strong style="color:#000000;text-decoration:underline;">ATTENDANCE REPORT <br />DEPT: {{$department}}<br />SECTION: {{ $shopname }} DATE: {{ $range }}</strong>
+            <td>
+            <td width="15%">
+            </td>
+        </tr>
+    </table>
+    @if ($print == 'Yes')
+        <table class="items" width="100%" style="font-size: 10pt; font-weight: bold; border-collapse: collapse; "
+            cellpadding="8">
+            <thead>
+                <tr class="mycolor">
+                    <td>No.</td>
+                    <td>Staff No</td>
+                    <td>Employee&nbsp;Name</td>
+                    @php
+                        $i = 0;
+                    @endphp
+                    @foreach ($dates as $date)
+                        <td>{{ !empty($wkdys) ? $wkdys[$i] : '' }} <br>{{ $date['date_formated'] }}</td>
+                        @php
+                            $i++;
+                        @endphp
+                    @endforeach
+                    <td><b>@1.5</b></td>
+                    <td><b>@2</b></td>
+                    <td>Total</td>
+                    <td>Signature</td>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!empty($emps))
+                    @foreach ($emps as $emp)
+                        <tr class="dotted">
+                            <td class="normal text-white">{{ $loop->iteration }}.</td>
+                            <td class="normal text-white">{{ $emp->staff_no }}</td>
+                            <td class="normal text-white">{{ $emp->staff_name }}</td>
+                            @php
+                                $i = 0;
+                            @endphp
+                            @foreach ($dates as $date)
+                                <td class="normal"
+                                    @if ($holi[$i] == 'SU_H') style="background: rgb(126, 128, 128)"
+                    @elseif($holi[$i] == 'SAT')
+                        style="background: rgb(223, 224, 224)"
+                    @elseif($holi[$i] == '-')
+                        style="background: rgb(255, 255, 255)" @endif>
+                                    {{ $othrs[$emp->id][$i] > 0 ? $othrs[$emp->id][$i] : 'x' }}
+                                </td>
+                                @php
+                                    $i++;
+                                @endphp
+                            @endforeach
+                            <td class="normal"><b>{{ $saturday[$emp->id] }}</b></td>
+                            <td class="normal"><b>{{ $sunday[$emp->id] }}</b></td>
+                            <td class="normal">{{ $emptthrs[$emp->id] }}</td>
+                            <td class="normal"></td>
+                        </tr>
+                    @endforeach
+                    <tr class="dotted">
+                        <td></td>
+                        <td></td>
+                        <td class="text-white">Hours Authorised</td>
+                        @php
+                            $tauthorized=0;
+                        @endphp
+                        @for ($i = 0; $i < count($dates); $i++)
+                        @php
+                        $tauthorized+=$cumauthhrs[$i];
+                    @endphp
+                            <td>{{ round($cumauthhrs[$i], 2) }}</td>
+                        @endfor
+                        <td>{{ round($tauthorized, 2) }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                     <tr class="dotted">
+                        <td></td>
+                        <td></td>
+                        <td>Hours Worked</td>
+                        @php
+                              $tworked=0;
+                        @endphp
+                        @for ($i = 0; $i < count($dates); $i++)
+                        @php
+                        $tworked+=$ttothrs[$i];
+                       @endphp
+                            <td>{{ round($ttothrs[$i], 2) }}</td>
+                        @endfor
+                        <td>{{ round($tworked, 2) }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr class="dotted">
+                        <td></td>
+                        <td></td>
+                        <td>Variance</td>
+                        @for ($i = 0; $i < count($dates); $i++)
+                            <td>{{ round($cumauthhrs[$i] - $ttothrs[$i], 2) }}</td>
+                        @endfor
+                        <td>{{ round($tauthorized- $tworked, 2) }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr class="dotted">
+                        <td></td>
+                        <td></td>
+                        <td>Cum Hrs Worked</td>
+                        @for ($i = 0; $i < count($dates); $i++)
+                            <td>{{ $cumttothrs[$i] }}</td>
+                        @endfor
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                @endif
+                <!--FOOTER SECTION-->
+            </tbody>
+        </table>
+        <div style="width:100%;margin-top:5px;padding-left:10px;padding-top:10px;font-size: 9pt;">
+            <p>Notes:</p>
+            <p>1.Within any 2 weeks window period shown above,overtime shall not exceed 36 hours.</p>
+            <p>2.For a month with more than 4 weeks,cummulative overtime hours may exceed 72 hours.</p>
+        </div>
+        <div style="width:100%;margin-top:5px;padding-left:10px;padding-top:10px;font-size: 7pt; ">
+            <div style="width:14%; float:left;">PREPARED BY: <strong> T/LEADER: </strong> </div>
+            <div style="width:17%; float:left;">REVIEWED BY:<strong> GROUP LEADER: </strong></div>
+            <div style="width:29%; float:left;">APPROVED BY:<strong> MANAGER </strong>
+            </div>
+            <div style="width:39%; float:left;">APPROVED BY:<strong> GENERAL MANAGER, HUMAN RESOURCE & ADMINISTRATION
+                </strong> </div>
+        </div><br />
+        <div style="width:100%;margin-top:5px;padding-left:10px;padding-top:10px; font-size: 8pt;">
+            <div style="width:14%; float:left;">{{ !empty($tlname) ? $tlname : 'Sign:....................' }} </div>
+            <div style="width:17%; float:left;">Sign:
+                <dottab class="menu" />
+            </div>
+            <div style="width:29%; float:left;">Sign:
+                <dottab class="menu" />
+            </div>
+            <div style="width:39%; float:left;">Sign:
+                <dottab class="menu" />
+            </div>
+        </div>
+    @else
+        <div style="margin-left:250px;color:red;font-size:22px;padding-top:50px;">NO ATTENDANCE MARKED FOR THIS SHOP!!!
+        </div>
+    @endif
+</body>
+
+</html>

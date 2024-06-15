@@ -1,0 +1,316 @@
+<div  class="modal-dialog modal-lg">
+    <div class="modal-content">
+    
+
+
+        <div class="modal-header modal-colored-header bg-info">
+            <h4 class="modal-title text-white" id="info-header-modalLabel">{{ $categories->query_name}}
+                
+            </h4>
+            <button type="button" class="close" data-dismiss="modal"
+                aria-hidden="true">×</button>
+        </div>
+        <div class="modal-body">
+
+<div class="row">
+    <div class="col-lg-12">
+
+    @if($categories->use_defferent_routing=='Yes')
+   
+
+    @if($categories->quiz_type=='multiple')
+    @php
+    $options= json_decode($categories->answers ,true);
+
+@endphp
+    <div>
+        <table class="table">
+            <thead class="bg-info text-white">
+                <tr>
+                    <th scope="col">OPTIONS</th>
+                
+                    
+                </tr>
+            </thead>
+            <tbody class="border border-info">
+                @php
+                $options= json_decode($categories->answers ,true);
+       
+            
+        
+           @endphp
+      @foreach ( $options as $option )
+                <tr>
+                    <th scope="row"> {{ $option['option_value'] }}</th>
+                 
+                </tr>
+                @endforeach
+              
+            </tbody>
+        </table>
+    </div>
+@endif
+
+  
+
+
+    @if($categories->quiz_type=='others')
+    @php
+    $options= json_decode($categories->answers ,true);
+
+@endphp
+    <div>
+        <table class="table">
+            <thead class="bg-info text-white">
+                <tr>
+                    <th scope="col">OPTIONS</th>
+                
+                    
+                </tr>
+            </thead>
+            <tbody class="border border-info">
+                @php
+                $options= json_decode($categories->answers ,true);
+       
+            
+        
+           @endphp
+      @foreach ( $options as $option )
+                <tr>
+                    <th scope="row"> {{ $option['option_value'] }}</th>
+                 
+                </tr>
+                @endforeach
+              
+            </tbody>
+        </table>
+    </div>
+
+    @endif
+
+    @if($categories->quiz_type=='numeric')
+
+    @php
+         $options= json_decode($categories->answers ,true);
+
+    @endphp
+
+    <div>
+        @if($categories->total_options==6)
+        <table class="table ">
+           
+            <thead class="bg-info text-white">
+                    <th >Min</th>
+                    <th >Max</th>
+                    <th >Correct Answer</th>
+                  
+                    
+                </tr>
+            </thead>
+            <tbody class="border border-info">
+                <tr>
+                    <th scope="row">{{ $options[0]['min'][0] }}</th>
+                    <td>{{ $options[1]['max'][0] }}</td>
+                    <td>{{ $categories->correct_answers }}</td>
+                    
+                </tr>
+               
+               
+            </tbody>
+        </table>
+        @else
+        @php
+      
+            if($categories->total_options==2){
+                $option='Greater Than (>) ';
+
+            }else if($categories->total_options==3){
+                $option='Less Than (<)';
+
+            }else if($categories->total_options==4){
+                $option='Greater Than or Equals To (>=)';
+
+            }else if($categories->total_options==5){
+                $option='Less Than or Equals To (<=)';
+
+            }else{
+                $option='Equals To (=)';
+            }
+        @endphp
+
+        <table class="table ">
+           
+            <thead class="bg-info text-white">
+                    <th >Option</th>
+                  
+                    <th >Correct Answer</th>
+                  
+                    
+                </tr>
+            </thead>
+            <tbody class="border border-info">
+                <tr>
+                    <td>{{ $option}}</td>
+                    <td>{{ $categories->correct_answers }}</td>
+                    
+                </tr>
+               
+               
+            </tbody>
+        </table>
+
+
+        @endif
+    </div>
+    @endif
+@else
+
+
+
+@if($rounting_categories->quiz_type=='multiple')
+
+<div>
+    <table class="table">
+        <thead class="bg-info text-white">
+            <tr>
+                <th scope="col">OPTIONS</th>
+            
+                
+            </tr>
+        </thead>
+        <tbody class="border border-info">
+            @php
+            $options= json_decode($rounting_categories->answers ,true);
+   
+        
+    
+       @endphp
+  @foreach ( $options as $option )
+            <tr>
+                <th scope="row"> {{ $option['option_value'] }}</th>
+             
+            </tr>
+            @endforeach
+          
+        </tbody>
+    </table>
+</div>
+@endif
+
+
+
+
+@if($rounting_categories->quiz_type=='others')
+@php
+$options= json_decode($rounting_categories->answers ,true);
+
+@endphp
+<div>
+    <table class="table">
+        <thead class="bg-info text-white">
+            <tr>
+                <th scope="col">OPTIONS</th>
+            
+                
+            </tr>
+        </thead>
+        <tbody class="border border-info">
+            @php
+            $options= json_decode($rounting_categories->answers ,true);
+   
+        
+    
+       @endphp
+  @foreach ( $options as $option )
+            <tr>
+                <th scope="row"> {{ $option['option_value'] }}</th>
+             
+            </tr>
+            @endforeach
+          
+        </tbody>
+    </table>
+</div>
+
+@endif
+
+@if($rounting_categories->quiz_type=='numeric')
+@php
+$options= json_decode($rounting_categories->answers ,true);
+
+@endphp
+
+<div>
+<table class="table ">
+   <thead class="bg-info text-white">
+           <th >Min</th>
+           <th >Max</th>
+           <th >Correct Answer</th>
+         
+           
+       </tr>
+   </thead>
+   <tbody class="border border-info">
+       <tr>
+           <th scope="row">{{ $options[0]['min'][0] }}</th>
+           <td>{{ $options[1]['max'][0] }}</td>
+           <td>{{ $rounting_categories->correct_answers }}</td>
+           
+       </tr>
+      
+      
+   </tbody>
+</table>
+</div>
+
+@endif
+
+@if($rounting_categories->quiz_type=='single')
+<div >
+    <table class="table">
+        <thead class="bg-info text-white">
+            <tr>
+                <th scope="col">Answer One</th>
+                <th scope="col">Answer Two</th>
+                
+             
+                
+            </tr>
+        </thead>
+        <tbody class="border border-info">
+            <tr>
+                <th scope="row">Yes</th>
+                <th scope="row">No</th>
+             
+            </tr>
+       
+           
+        </tbody>
+    </table>
+</div>
+
+@endif
+
+
+
+@endif
+</div>
+    </div>
+
+
+
+
+
+   
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-light"
+                data-dismiss="modal">Close</button>
+           
+        </div>
+
+    </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
+
+
+

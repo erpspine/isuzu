@@ -1,0 +1,422 @@
+<?php
+namespace App\Http\Controllers\tcm;
+use App\Http\Controllers\Controller;
+use App\Models\shop\Shop;
+use App\Models\tcm\Tcm;
+use App\Models\tcmjoint\TcmJoint;
+use App\Models\unit_model\Unit_model;
+use Carbon\Carbon;
+use DataTables;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use DB;
+use Excel;
+class TcmController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        try {
+            if (request()->ajax()) {
+                $tcms = Tcm::whereNotNull('id');
+                $shop_id = request()->get('shop_id', null);
+                $status = request()->get('status', null);
+                if (!empty($shop_id)) {
+                    $tcms->where('shop_id', $shop_id);
+                }
+                if (!empty($status)) {
+
+                    if($status=='NOK'){
+                        $tcms->whereDate('next_calibration_date', '<', date('Y-m-d'));
+                       
+
+                    }else{
+                        $tcms->where('next_calibration_date', '>=', date('Y-m-d')); 
+                    }
+
+                    
+                }
+                
+                $tcms->get();
+                return DataTables::of($tcms)
+                    ->addColumn('shop', function ($tcms) {
+                        return $tcms->shop->shop_name;
+                    })
+                    ->addColumn('status', function ($tcms) {
+                        $status='OK';
+
+                        $calibration_date = $tcms->next_calibration_date;
+                        $result = Carbon::createFromFormat('Y-m-d', $calibration_date)->isPast();
+                        if($result && $calibration_date !=date('Y-m-d') ){
+                            $status='NOK';
+                        }
+                        return $status;
+                    })
+
+                    ->addColumn('action', function ($tcms) {
+                        return '
+                        <div class="btn-group">
+                        <button type="button" class="btn btn-dark dropdown-toggle"
+                            data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            <i class="ti-settings"></i>
+                        </button>
+                        <div class="dropdown-menu animated slideInUp"
+                            x-placement="bottom-start"
+                            style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, 35px, 0px);">
+                            <a class="dropdown-item" href="' . route('tcm.show', [$tcms->id]) . '"><i
+                                    class="ti-eye"></i> Open</a>
+                            <a class="dropdown-item" href="' . route('tcm.edit', [$tcms->id]) . '"><i
+                                    class="ti-pencil-alt"></i> Edit</a>
+                            <a class="dropdown-item delete_brand_button delete-tcm" href="' . route('tcm.destroy', [$tcms->id]) . '"><i
+                                    class="ti-trash"></i> Delete</a>
+                        </div>
+                    </div> 
+                    ';
+                    })
+                    ->make(true);
+            }
+            $shops = Shop::where('is_gca_shop', 1)->get()->pluck('report_name', 'id');
+            return view('tcm.index',compact('shops'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        try {
+            $shops = Shop::where('is_gca_shop', 1)->get()->pluck('report_name', 'id');
+            return view('tcm.create')->with(compact('shops'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'tool_id' => 'bail|required|unique:tcms,tool_id',
+            'shop_id' => 'bail|required',
+            'tool_model' => 'bail|required',
+            'tool_type' => 'bail|required',
+        ]);
+        // Check validation failure
+        if ($validator->fails()) {
+            $output = [
+                'success' => false,
+                'msg' => "It appears you have forgotten to complete something",
+            ];
+        }
+        $data = $request->except(['_token']);
+        if (!empty($data['last_calibration_date'])) {
+            $data['last_calibration_date'] = date_for_database($data['last_calibration_date']);
+            $next_calibration_date = Carbon::createFromFormat('Y-m-d', $data['last_calibration_date']);
+            $next_calibration_date  = $next_calibration_date->addDays($data['days_to_next_calibrarion']);
+            $data['next_calibration_date'] = $next_calibration_date;
+        }
+       
+        $data['created_by'] = auth()->user()->id;
+        // Check validation success
+        if ($validator->passes()) {
+            if (request()->ajax()) {
+                try {
+                    $data = Tcm::create($data);
+                    $output = [
+                        'success' => true,
+                        'msg' => "Tool Created Successfully"
+                    ];
+                } catch (\Exception $e) {
+                    \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+                    $output = [
+                        'success' => false,
+                        'msg' => $e->getMessage(),
+                    ];
+                }
+            }
+        }
+        return $output;
+    }
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $details=Tcm::find($id);
+
+        return view('tcm.show',compact('details'));
+    }
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Tcm $tcm)
+    {
+        try {
+            $shops = Shop::where('is_gca_shop', 1)->get()->pluck('report_name', 'id');
+            return view('tcm.edit', compact('tcm', 'shops'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'tool_id' => 'bail|required',
+            'shop_id' => 'required',
+            'tool_model' => 'required',
+            'tool_type' => 'bail|required',
+            'days_to_next_calibrarion' => 'required',
+        ]);
+        // Check validation failure
+        if ($validator->fails()) {
+            $output = [
+                'success' => false,
+                'msg' => "It appears you have forgotten to complete something",
+            ];
+        }
+        $data = $request->except(['_token']);
+        if ($validator->passes()) {
+            if (request()->ajax()) {
+                try {
+                    if (!empty($data['last_calibration_date'])) {
+                        $data['last_calibration_date'] = date_for_database($data['last_calibration_date']);
+                        $next_calibration_date = Carbon::createFromFormat('Y-m-d', $data['last_calibration_date']);
+                        $next_calibration_date  = $next_calibration_date->addDays($data['days_to_next_calibrarion']);
+                        $data['next_calibration_date'] = $next_calibration_date;
+                    }
+                    $data['created_by'] = auth()->user()->id;
+                    $result = Tcm::find($id);
+                    $result->update($data);
+                    $result->touch();
+                    $output = [
+                        'success' => true,
+                        'msg' => "Tool Record Updated Successfully"
+                    ];
+                } catch (\Exception $e) {
+                    \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+                    $output = [
+                        'success' => false,
+                        'msg' => $e->getMessage(),
+                    ];
+                }
+            }
+        }
+        return $output;
+    }
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        if (request()->ajax()) {
+            try {
+                $can_be_deleted = true;
+                $error_msg = '';
+                //Check if any routing has been done
+                //do logic here
+                $items = Tcm::where('id', $id)
+                    ->first();
+                if ($can_be_deleted) {
+                    if (!empty($items)) {
+                        DB::beginTransaction();
+                        //Delete Query  details
+                        TcmJoint::where('tcm_id', $id)
+                            ->delete();
+                        $items->delete();
+                        DB::commit();
+                    }
+                    $output = [
+                        'success' => true,
+                        'msg' => "Tool Deleted Successfully"
+                    ];
+                } else {
+                    $output = [
+                        'success' => false,
+                        'msg' => $error_msg
+                    ];
+                }
+            } catch (\Exception $e) {
+                DB::rollBack();
+                \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+                $output = [
+                    'success' => false,
+                    'msg' => "Something Went Wrong"
+                ];
+            }
+            return $output;
+        }
+    }
+    public function import_tool()
+    {
+        try {
+            return view('tcm.importtool');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    public function savetoolimport(Request $request)
+    {
+        try {
+            //Set maximum php execution time
+            ini_set('max_execution_time', 0);
+            ini_set('memory_limit', -1);
+            if ($request->hasFile('tools_upload')) {
+                $file = $request->file('tools_upload');
+                $parsed_array = Excel::toArray([], $file);
+                $imported_data = array_splice($parsed_array[0], 1);
+                $formated_data = [];
+                $is_valid = true;
+                $error_msg = '';
+                $total_rows = count($imported_data);
+                DB::beginTransaction();
+                foreach ($imported_data as $key => $value) {
+                    //  dd(count($value));
+                    if (count($value) < 8) {
+                        $is_valid =  false;
+                        $error_msg = "Some of the columns are missing. Please, use latest  file template.";
+                        break;
+                    }
+                    $row_no = $key + 1;
+                    $tools_array = [];
+                    $tools_array['created_by'] = auth()->user()->id;
+                    $tools_array['created_at'] = date('Y-m-d H:i:s');
+                    $tools_array['updated_at'] = date('Y-m-d H:i:s');
+                    //Tool ID 
+                    $tool_id = trim($value[0]);
+                    if (!empty($tool_id)) {
+                        $check_tool_exist = Tcm::where('tool_id', $tool_id)->exists();
+                        if ($check_tool_exist) {
+                            $is_valid =  false;
+                            $error_msg = "This Tool ID is in use check  row no. $row_no";
+                            break;
+                        } else {
+                            $tools_array['tool_id'] = $tool_id;
+                        }
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Tool ID  is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Shop
+                    $shop_name = trim($value[1]);
+                    if (!empty($shop_name)) {
+                        $shop = Shop::where('report_name',  $shop_name)->first();
+                        if (!empty($shop)) {
+                            $tools_array['shop_id'] = $shop->group_shop;
+                        } else {
+                            $is_valid = false;
+                            $error_msg = "Shop  not found in row no. $row_no";
+                            break;
+                        }
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Shop is required in row no. $row_no";
+                        break;
+                    }
+                    //Tool Model
+                    $tool_model = trim($value[2]);
+                    if (!empty($tool_model)) {
+                        $tools_array['tool_model'] = $tool_model;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Tool Model is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Tool Type
+                    $tool_type = trim($value[3]);
+                    if (!empty($tool_type)) {
+                        $tools_array['tool_type'] = $tool_type;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Tool Type is required in row no. $row_no";
+                        break;
+                    }
+                    //Add Serial
+                    $tools_array['serial_number'] = isset($value[4]) ? $value[4] : null;
+                    //Add SKU
+                    $tools_array['sku'] = isset($value[5]) ? $value[4] : null;
+                    //Add calibration date
+                    $calibratio_date = trim($value[6]);
+                    if (!empty($calibratio_date)) {
+                        $tools_array['last_calibration_date'] = date_for_database($calibratio_date);
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Last Calibration Date is required in row no. $row_no";
+                        break;
+                    }
+                    //Add days to next Calibration
+                    $calibratio_days = trim($value[7]);
+                    if (!empty($calibratio_days)) {
+                        $next_calibration_date = Carbon::createFromFormat('Y-m-d', $tools_array['last_calibration_date']);
+                        $next_calibration_date  = $next_calibration_date->addDays($calibratio_days);
+                        $tools_array['days_to_next_calibrarion'] = $calibratio_days;
+                        $tools_array['next_calibration_date'] = date_for_database($next_calibration_date);
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Last Calibration Date is required in row no. $row_no";
+                        break;
+                    }
+                    //Tool Status
+                    $tool_status = trim($value[8]);
+                    if (!empty($tool_status)) {
+                        $tools_array['status'] = $tool_status;
+                    } else {
+                        $is_valid =  false;
+                        $error_msg = "Tool Status is required in row no. $row_no";
+                        break;
+                    }
+                    //Assign to formated array
+                    $formated_data[] = $tools_array;
+                }
+                if (!$is_valid) {
+                    throw new \Exception($error_msg);
+                }
+                //Create new product
+                $tools = Tcm::insert($formated_data);
+                $output = [
+                    'success' => 1,
+                    'msg' => 'Tool  Imported Successfully!!'
+                ];
+            }
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+            $output = [
+                'success' => 0,
+                'msg' => $e->getMessage()
+            ];
+            return redirect('importtool')->with('notification', $output);
+        }
+        return redirect('importtool')->with('status', $output);
+    }
+}

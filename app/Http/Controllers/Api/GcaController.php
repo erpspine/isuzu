@@ -1,0 +1,358 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\AppHelper;
+use App\Http\Controllers\Controller;
+use App\Models\cvzoneitems\CvZoneItem;
+use App\Models\cvzones\CvZone;
+use App\Models\gcaauditcategory\GcaAuditReportCategory;
+use App\Models\gcaqueryanswer\GcaQueryAnswer;
+use App\Models\gcaquerycategorycv\GcaQueryCategoryCv;
+use App\Models\gcaquerycategoryitemcv\GcaQueryCategoryItemCv;
+use App\Models\gcaqueryitems\GcaQueryItem;
+use App\Models\gcaqueryitemtag\GcaQueryItemTag;
+use App\Models\gcaquerytitle\GcaQueryTitle;
+use App\Models\gcasteps\GcaSteps;
+use App\Models\shop\Shop;
+use App\Models\vehicle_units\vehicle_units;
+use DB;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
+class GcaController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        //
+    }
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+    }
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
+    }
+    public function validate_gca_unit($chasis_number, $unit_type)
+    {
+        $master = array();
+
+        $check_autid_status = vehicle_units::where('vin_no', '' . $chasis_number . '')->where('gca_audit_complete', '1')->exists();
+        if($check_autid_status ){
+            return response()->json(['msg' => 'This Vehicle Is Already Audited!!', 'data' => 'audited', 'success' => false], 200);
+            exit;
+
+        }
+        $check_autid_status = vehicle_units::where('vin_no', '' . $chasis_number . '')->where('status','!=', '2')->exists();
+        if($check_autid_status ){
+            return response()->json(['msg' => 'This Vehicle Is Still In Production!!', 'data' => 'notcomplete', 'success' => false], 200);
+            exit;
+
+        }
+       
+
+        if ($unit_type == 'CV') {
+            //CV
+            $check_unit = vehicle_units::where('vin_no', '' . $chasis_number . '')->whereHas('model', function ($query) {
+                $query->where('vehicle_type_id', '1')->orWhere('vehicle_type_id', '2');
+            })->with(['model' => function ($q) {
+                $q->where('vehicle_type_id', '1')->orWhere('vehicle_type_id', '2');
+            }])->first();
+        } else {
+            //LCV
+            $check_unit = vehicle_units::where('vin_no', '' . $chasis_number . '')->whereHas('model', function ($query) {
+                $query->where('vehicle_type_id', '3')->orWhere('vehicle_type_id', '4');
+            })->with(['model' => function ($q) {
+                $q->where('vehicle_type_id', '3')->orWhere('vehicle_type_id', '4');
+            }])->first();
+        }
+        if ($check_unit) {
+            $master['vehicle_id'] = $check_unit->id;
+            $master['vehicle_type_id'] = $check_unit->model->vehicle_type_id;
+            $master['chasis'] = $check_unit->vin_no;
+            $master['model'] = $check_unit->model->model_name;
+            $master['unit_type'] = $check_unit->model->unittype->vehicle_name;
+            $master['model_id'] = $check_unit->model->id;
+            return response()->json(['msg' => null, 'data' => $master, 'success' => true], 200);
+        } else {
+            return response()->json(['msg' => null, 'data' => null, 'success' => false], 200);
+        }
+    }
+    public function load_gca_category($step_id,$unit_type,$vehicle_id)
+    {
+
+       
+        $data = GcaQueryTitle::with(['querycategories','querycategories.categoryItems','querycategories.categoryanswer' => function ($query) use ($vehicle_id) {
+            $query->where('vehicle_id', $vehicle_id);
+        }])->where('gca_stage_id',$step_id)->where('vehicle_type',$unit_type)->get();
+
+
+       /* $data = GcaQueryCategoryCv::whereHas('titles', function ($q) use ($step_id,$unit_type) {
+            $q->where('gca_stage_id', $step_id);
+            $q->where('vehicle_type', $unit_type);
+        })->with([
+            'titles' => function ($query) use ($step_id,$unit_type) {
+                $query->where('gca_stage_id', $step_id);
+                $query->where('vehicle_type', $unit_type);
+            }, 'classification'
+        ])->get();*/
+        return response()->json(['msg' => null, 'data' => $data, 'success' => true], 200);
+    }
+    public function load_gca_query($gca_audit_id,$gca_query_id,$vehicle_id,$vehicle_type)
+    {
+        $data = GcaQueryCategoryItemCv::with(['queryCategory','gcaAnswer' => function ($query) use ($vehicle_id,$gca_audit_id) {
+            $query->where('vehicle_id', $vehicle_id);
+            $query->where('gca_audit_report_category_id', $gca_audit_id);
+        }])->where('vehicle_type', $vehicle_type)->where('gca_query_category_cv_id', $gca_query_id)->get();
+        return response()->json(['msg' => null, 'data' => $data, 'success' => true], 200);
+    }
+    public function load_gca_queryitem($query_item_id)
+    {
+        $master = array();
+        $master['queryitem'] = GcaQueryCategoryItemCv::with('queryCategory')->find($query_item_id);
+        $master['shops'] = Shop::where('check_shop','1')->get();
+        // $master['queryitem'] = GcaQueryItem::where('id', '' . $query_item_id . '')->whereHas('gcaquery')->with(['gcaquery'])->first();
+        //$master['defects'] = GcaQueryItemTag::where('gca_query_item_id', '' . $query_item_id . '')->get();
+        return response()->json(['msg' => null, 'data' => $master, 'success' => true], 200);
+    }
+    public function savegcarecord(Request $request)
+    {
+        $record = array();
+        //Check if Wait Selected
+        if (empty($request->factor)) {
+            return response()->json(['msg' => 'Select    Defect Weight!!!', 'data' => null, 'success' => false], 200);
+            exit;
+        }
+
+        if (empty($request->shop_id)) {
+            return response()->json(['msg' => 'Select  Shop!!!', 'data' => null, 'success' => false], 200);
+            exit;
+        }
+        //Check if Two units Captured
+        $date = date('Y-m-d');
+        $checkunitscaptured = GcaQueryAnswer::whereDate('created_at', $date)->where('vehicle_type', $request->vehicle_type)->distinct('vehicle_id')->count();
+        $car_number = $checkunitscaptured + 1;
+        $check_unit = GcaQueryAnswer::whereDate('created_at', $date)->where('vehicle_id', $request->vehicle_id)->first();
+        if ($check_unit) {
+            $car_number = $check_unit->car_number;
+        }
+        
+       /* else {
+            if ($checkunitscaptured == 2) {
+                return response()->json(['msg' => 'Two Units of ' . $request->vehicle_type . ' already sampled!!!', 'data' => null, 'success' => false], 200);
+                exit;
+            }
+        }*/
+        $defectdata = $request->factor;
+        $weight = substr($defectdata, strpos($defectdata, "-") + 1);
+        $defect_option = strstr($defectdata, '-', true);
+        $tag = null;
+        if (!empty($request->category)) {
+            $tag = $request->category;
+        }
+          $defect_image=null;
+        if (!empty($request->defect_image)) {
+            $defect_image = (new AppHelper)->saveBase64($request->defect_image);
+        }
+
+
+        
+        DB::beginTransaction();
+        try {
+            $record['vehicle_id'] = $request->vehicle_id;
+            $record['gca_query_item_id'] = $request->gca_query_item_id;
+            $record['vehicle_type'] = $request->vehicle_type;
+            $record['vehicle_type_id'] = $request->vehicle_type_id;
+            $record['gca_audit_report_category_id'] = $request->gca_audit_report_category_id;
+            $record['defect_option'] = $defect_option;
+            $record['defect'] = $request->defect;
+            $record['defect_image'] = $defect_image;
+            $record['defect_category'] = $request->defect_category;
+            $record['defect_tag'] = $tag;
+            $record['weight'] = $weight * $request->defect_count;
+            $record['car_number'] = $car_number;
+            $record['defect_count'] = $request->defect_count;
+            $record['step_id'] = $request->step_id;
+            $record['gca_query_category_id'] = $request->gca_query_category_id;
+            $record['shop_id'] = $request->shop_id;
+            $record['gca_manual_reference'] = $request->gca_manual_reference;
+            $record['responsible_team_leader'] = $request->responsible_team_leader;
+            $record['user_id'] = Auth::id();
+            $datas = GcaQueryAnswer::create($record);
+            DB::commit();
+            return response()->json(['msg' => 'Gca Record Saved Successfully', 'data' => $datas['id'], 'success' => true], 200);
+        } catch (\Exception $e) {
+            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+            return response()->json(['msg' => $e->getMessage(), 'data' => null, 'success' => false], 200);
+        }
+    }
+    public function load_gca_steps($gca_type, $vehicle_id)
+    {
+       
+        $data = GcaSteps::with(['queries' => function ($query) use ($gca_type) {
+            $query->where('vehicle_type', $gca_type);
+        }, 'auditdone' => function ($query) use ($vehicle_id) {
+            $query->where('vehicle_id', $vehicle_id);
+        }])->get();
+        //->where('vehicle_type', $gca_type)->get();
+        return response()->json(['msg' => null, 'data' => $data, 'success' => true], 200);
+    }
+    public function load_zone_items($step_id,$gca_type)
+    {
+        if($gca_type=='CV'){
+
+            switch ($step_id) {
+            case ('4'):
+                $data = CvZone::with('zoneitems')->where('vehicle_type',$gca_type)->where('template_type','Appearance')->first();
+                break;
+            case ('5'):
+                    $data = CvZone::where('vehicle_type',$gca_type)->where('template_type','Specification')->first();
+                    break;
+            case ('6'):
+                $data = CvZone::with(['zoneitemstop','zoneitemsbottom'])->where('vehicle_type',$gca_type)->where('template_type','Static')->first();
+                break;
+            case ('7'):
+                    $data = CvZone::where('vehicle_type',$gca_type)->where('template_type','Measurement')->first();
+                            break;
+            case ('8'):
+                    $data = CvZone::where('vehicle_type',$gca_type)->where('template_type','Water-Leaks-Notes')->first();
+                    break;
+          case ('9'):
+                        $data = CvZone::where('vehicle_type',$gca_type)->where('template_type','Running')->first();
+                        break;
+            default:
+                $data = [];
+        }
+        }elseif($gca_type=='LCV'){
+            switch ($step_id) {
+                case ('4'):
+                    $data = CvZone::where('vehicle_type',$gca_type)->where('template_type','Appearance')->first();
+                    break;
+                case ('5'):
+                        $data = CvZone::where('vehicle_type',$gca_type)->where('template_type','Specification')->first();
+                        break;
+                case ('6'):
+                    $data = CvZone::where('vehicle_type',$gca_type)->where('template_type','Static')->first();
+                    break;
+                case ('7'):
+                $data = CvZone::where('vehicle_type',$gca_type)->where('template_type','Measurement')->first();
+                        break;
+
+                case ('8'):
+                    $data = CvZone::where('vehicle_type',$gca_type)->where('template_type','Water-Leaks-Notes')->first();
+                        break;
+                case ('9'):
+                $data = CvZone::where('vehicle_type',$gca_type)->where('template_type','Running')->first();
+                break;
+                default:
+                    $data = [];
+            }
+        }
+        
+
+
+
+        return response()->json(['msg' => null, 'data' => $data, 'success' => true], 200);
+    }
+    public function updateGcaStatus(Request $request)
+    {
+        DB::beginTransaction();
+        try {
+            $vehiclerecord = vehicle_units::find($request->vehicle_id);
+            $date=date('Y-m-d');
+            $vehiclerecord->update(['gca_audit_complete' => '1','gca_completion_date'=> $date]);
+            DB::commit();
+            return response()->json(['msg' => 'Gca Status  Updated Successfully', 'data' => $vehiclerecord, 'success' => true], 200);
+        } catch (\Exception $e) {
+            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+            return response()->json(['msg' => $e->getMessage(), 'data' => null, 'success' => false], 200);
+        }
+    }
+    public function load_gca_actions()
+    {
+        $actions = GcaQueryAnswer::where('is_corrected', 'No')->with(['vehicle'=>function($query){
+            $query->where('gca_audit_complete', '1');
+
+        },'auditCategory','shop'])->whereHas('vehicle', function ($query)  {
+               
+            $query->where('gca_audit_complete', '1');
+          })->get();
+        return response()->json(['msg' => null, 'data' => $actions, 'success' => true], 200);
+    }
+    public function save_gca_action(Request $request)
+    {
+        if (empty($request->correction_remarks) || $request->correction_remarks == 'undefined') {
+            return response()->json(['msg' => 'You have to  fill all fields!!!', 'data' => null, 'success' => false], 200);
+            exit;
+        }
+        DB::beginTransaction();
+        $containment = GcaQueryAnswer::find($request->id);
+        $containment->corrected_by = Auth::id();
+        $containment->correction_remarks = $request->correction_remarks;
+        $containment->date_corrected = date('Y-m-d');
+        $containment->is_corrected = 'Yes';
+        $containment->update();
+        DB::commit();
+        return response()->json(['msg' =>   'Issue Saved Successfully', 'data' => null, 'success' => true], 200);
+    }
+
+    
+}

@@ -1,0 +1,46 @@
+<div class="table-responsive">
+    <table class="table" id="defectlist">
+        <thead class="thead-light">
+            <tr>
+                <th>Phenomenon</th>
+                <th>Defect Details </th>
+                <th>Position </th>
+                <th>0.5 </th>
+                <th>1 </th>
+                <th>10 </th>
+                <th>50 </th>
+           
+                <th>Action</th>
+            </tr>
+        </thead>
+        @if (count($records)>0)
+        <tbody>
+            @php
+                $i=0;
+            @endphp
+            @foreach ( $records as $record )
+         
+     
+            <tr>
+                <td><input type="text" class="form-control" value="{{ $record->phenomenon }}"  placeholder="Phenomenon" name="phenomenon[]" id="phenomenon-{{ $i }}" ></td>
+<td> <textarea class="form-control"  rows="2" placeholder="Defect Details" name="defect_name[]" id="defect_name-{{ $i }}" >{{ $record->defect_name }}</textarea></td>
+<td class=""> <input type="text" value="{{ $record->defect_position }}"   class="form-control " placeholder="Position" name="defect_position[]" id="defect_position-{{ $i }}" required></td>
+<td> <input name="factor_zero[{{ $i }}]" type="checkbox" value="0.5" id="md_checkbox_20" class="chk-col-red mt-2"  {{ ($record->factor_zero == 0.5) ? 'checked' : ''}} /></td>
+<td> <input name="factor_one[{{ $i }}]" type="checkbox" value="1"  id="md_checkbox_21" class="chk-col-red mt-2"  {{ ($record->factor_one == 1) ? 'checked' : ''}} /></td>
+<td> <input name="factor_ten[{{ $i }}]" type="checkbox" value="10"  id="md_checkbox_25" class="chk-col-red mt-2"  {{ ($record->factor_ten == 10) ? 'checked' : ''}} /></td>
+<td> <input name="factor_fifty[{{ $i }}]" type="checkbox" value="50"  id="md_checkbox_26" class="chk-col-red mt-2" {{ ($record->factor_fifty == 50) ? 'checked' : ''}} /></td>
+<td><a href="javascript:void(0)" class="text-inverse" title="" data-toggle="tooltip" data-original-title="Delete"><i class="ti-trash remove_item_row"></i></a></td>
+</tr>
+@php
+$i++;
+@endphp
+
+            @endforeach
+        </tbody>
+     
+            
+        @endif
+     
+    </table>
+
+</div>

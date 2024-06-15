@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Models\gcaquerycategoryitemcv;
+
+use App\Models\gcaqueryanswer\GcaQueryAnswer;
+use App\Models\gcaquerycategorycv\GcaQueryCategoryCv;
+use App\Models\gcaquerytitle\GcaQueryTitle;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class GcaQueryCategoryItemCv extends Model
+{
+    use HasFactory;
+    protected $fillable = ['gca_query_category_cv_id','factor_zero',
+    'factor_one','factor_ten','factor_fifty','loose',
+    'dermaged','wrong_assembly','lack_of_parts','function_defect',
+'zone_a','zone_b','zone_c','zone_d','zone_e','zone_f','defect_name','defect_condition',
+'defect_position','query_category','gca_stage_id','phenomenon'];
+
+public function queryCategory()
+{
+    return $this->belongsTo(GcaQueryCategoryCv::class,'gca_query_category_cv_id');
+}
+
+public function gcaAnswer()
+{
+    return $this->hasMany(GcaQueryAnswer::class,'gca_query_item_id');
+}
+
+
+  
+}

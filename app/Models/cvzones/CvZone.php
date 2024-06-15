@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Models\cvzones;
+
+use App\Models\cvzoneitems\CvZoneItem;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class CvZone extends Model
+{
+    use HasFactory;
+    protected $fillable = ['image_one','image_two','image_three','vehicle_type','note','template_type','user_id'];
+
+    public function zoneitems()
+    {
+
+      return $this->hasMany(CvZoneItem::class,'cv_zone_id');
+
+
+    }
+    public function zoneitemstop()
+    {
+
+      return $this->hasMany(CvZoneItem::class,'cv_zone_id')->where('template_position','Top');
+
+
+    }
+    public function zoneitemsbottom()
+    {
+
+      return $this->hasMany(CvZoneItem::class,'cv_zone_id')->where('template_position','Bottom');
+
+
+    }
+    protected $appends = ['imageOneUri', 'imageTwoUri','imageThreeUri'];
+
+    public function getImageOneUriAttribute()
+    {
+        if (isset($this->attributes['image_one'])) {
+            return url('upload/qcos/') . '/' . $this->attributes['image_one'];
+        }
+    }
+    
+    public function getImageTwoUriAttribute()
+    {
+        if (isset($this->attributes['image_two'])) {
+            return url('upload/qcos/') . '/' . $this->attributes['image_two'];
+        }
+    }
+
+    public function getImageThreeUriAttribute()
+    {
+        if (isset($this->attributes['image_three'])) {
+            return url('upload/qcos/') . '/' . $this->attributes['image_three'];
+        }
+    }
+}

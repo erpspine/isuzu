@@ -1,0 +1,159 @@
+<?php
+
+namespace App\Http\Controllers\changetraceable;
+
+use App\Http\Controllers\Controller;
+use App\Models\queryanswer\Queryanswer;
+use App\Models\unit_model\Unit_model;
+use App\Models\vehicle_units\vehicle_units;
+use Illuminate\Http\Request;
+
+class ChangeTraceableController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        try {
+            $lot = vehicle_units::distinct('lot_no')->pluck('lot_no', 'lot_no');
+            $job = vehicle_units::distinct('job_no')->pluck('job_no', 'job_no');
+            $model = Unit_model::pluck('model_name', 'id');
+            $data=[];
+            return view('changetraceable.index')->with(compact('lot','job','model','data'));
+
+
+          
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
+    }
+  
+    
+    public function loadbyjob(Request $request)
+    {
+        $q = $request->lot_no;
+        $result = vehicle_units::with(['model'])->get()->where('lot_no', '=', $q);
+        return json_encode($result);
+    }
+    public function filter_job(Request $request)
+    {
+
+        try {
+        $lot_no=$request->lot_no;
+        $vehicle_id=$request->job_no;
+        $queries=Queryanswer::with('vehicle')->whereIn('vehicle_id',$vehicle_id)->where( function ( $query ){
+            $query->whereHas('queries', function ($subquery ) {
+                $subquery ->where('quiz_type','traceable');
+            })->orWhereHas('querycategory', function ($subquery ) {
+                $subquery ->where('quiz_type','traceable');
+            });
+            
+        })->get();
+        $vehicles = vehicle_units::with(['model'])->whereIn('id',$vehicle_id)->get();
+        $plucked=[];
+        foreach ($vehicles as $item) {
+            $plucked[$item->id] =$item->model->model_name .' - '.$item->job_no ;
+        }
+  
+
+            $lot = vehicle_units::distinct('lot_no')->pluck('lot_no', 'lot_no');
+            $job = vehicle_units::distinct('job_no')->pluck('job_no', 'job_no');
+            $model = Unit_model::pluck('model_name', 'id');
+            
+            return view('changetraceable.index')->with(compact('lot','job','model','queries','lot_no','vehicle_id','plucked'));
+
+    } catch (\Exception $e) {
+        dd($e->getMessage());
+        return redirect()->back()->with('error', $e->getMessage());
+    }
+
+        
+
+    
+    }
+
+    public function updatetraceable(Request $request)
+    {
+      
+      if($request->ajax()){
+        Queryanswer::find($request->input('pk'))->update([$request->input('name') => $request->input('value')]);
+          return response()->json(['success' => true,'data'=>$request->input('name')]);
+      }
+
+    
+
+
+
+    }
+    
+}

@@ -1,0 +1,19 @@
+<?php
+namespace App\Models\qcoscontainemnt\Traits;
+use App\Models\appuser\Appuser;
+
+/**
+ * Class PlantDivisionRelationship
+ */
+trait QcosContainmentRelationship
+{
+   
+    public function doneby()
+    {
+
+      return $this->hasOne(Appuser::class,'id','generated_by');
+
+
+    }    
+
+}

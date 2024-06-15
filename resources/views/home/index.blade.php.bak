@@ -1,0 +1,324 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="row page-titles">
+
+</div>
+<!-- ============================================================== -->
+<!-- End Bread crumb and right sidebar toggle -->
+<!-- ============================================================== -->
+<!-- ============================================================== -->
+<!-- Container fluid  -->
+<!-- ============================================================== -->
+<div class="container-fluid">
+
+<div class="card-columns widget-app-columns">
+             <div class="card">
+                <div class="card-body">
+                    <div class="d-flex ">
+                        <h4 class="card-title ml-3">PEOPLE</h4>
+
+                    </div>
+
+                    <div class="col-lg-12 mb-4">
+                        <div class="card-header bg-primary mb-3">
+                           <h4 class="mb-0 text-white">MTD ABSENTEEISM</h4>
+                        </div>
+                            <div class="gaugejs-box">
+                                <canvas id="absentieesm" class="gaugejs1">guage</canvas>
+                                <hr>
+                                <div class="text-center aline">
+                                    <h4 class="font-weight-light mb-3"><span style="margin-right: 12%;">Actual: 33%</span>
+                                        Target: 33%</h4>
+
+                                 </div>
+                            </div>
+                    </div>
+
+                    <div class="col-lg-12 mb-4">
+                        <div class="card-header bg-primary mb-3">
+                           <h4 class="mb-0 text-white">MTD T/L AVAILABILITY</h4>
+                        </div>
+                            <div class="gaugejs-box">
+                                <canvas id="tlavail" class="gaugejs2">guage</canvas>
+                                <hr>
+                                <div class="text-center aline">
+                                    <h4 class="font-weight-light mb-3"><span style="margin-right: 12%;">Actual: 333%</span>
+                                        Target: 333%</h4>
+                                 </div>
+                            </div>
+                    </div>
+                    </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <h4 class="card-title  ml-3"><a href="{{route('quality_control_dashboard')}} ">QUALITY</a></h4>
+                            </div>
+							 <div class="col-lg-12">
+                                <div class="card-header bg-orange">
+                                    <h4 class="mb-0 text-white">MTD SCORE</h4>
+                                </div>
+                                <div class="row text-center mt-2">
+                                    <div class="col-sm-4">
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <h5>Target</h5>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <h5>Actual</h5>
+                                    </div>
+                                </div>
+
+
+                                <div class="row mb-2">
+                                    <div class="col-sm-4">
+                                            <h5>DRL</h5>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="border text-center pt-2">
+                                            <h2 class="fs-30 font-w600 counter">33</h2>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        <div class="border text-center pt-2">
+                                            <h2 class="fs-30 font-w600 counter">
+											<span style="color:red;">33</span>
+                                              
+                                            </h2>
+                                        </div>
+                                    </div>
+                                </div>
+                                    <div class="row mb-2">
+                                        <div class="col-sm-4 ">
+                                                <h5>DRR</h5>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="border text-center pt-2">
+                                                <h2 class="fs-30 font-w600 counter">e333</h2>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="border text-center pt-2">
+                                                <h2 class="fs-30 font-w600 counter">
+												<span style="color:red;">33333</span>
+                                                   
+                                                </h2>
+
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    <div class="row mb-2">
+                                        <div class="col-sm-4">
+                                                <h5>CARE</h5>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="border text-center pt-2">
+                                                <h2 class="fs-30 font-w600 counter">222</h2>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="border text-center pt-2">
+                                                <h2 class="fs-30 font-w600 counter">
+												<span style="color:red;">2222</span>
+                                                    
+                                                </h2>
+                                            </div>
+                                        </div>
+                                </div>
+                        </div>
+                    <hr>
+
+                    <div class="col-lg-12">
+                        <div class="card-header bg-orange">
+                            <h4 class="mb-0 text-white">MTD GCA SCORE</h4>
+                        </div>
+
+                        <table width="100%" class="text-center mt-3">
+                            <tr>
+                                <th></th>
+                                <th colspan="2">DPV</th>
+                                <th colspan="2" class="ml-1">WDPV</th>
+                            </tr>
+                            <tr>
+                                <td></td>
+                                <td class="pt-2"><i>Target</i></td>
+                                <td class="pt-2"><i>Actual</i></td>
+                                <td class="ml-1 pt-2"><i>Target</i></td>
+                                <td  class="pt-2"><i>Actual</i></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <h4>CV</h4>
+                                </td>
+                                <td>
+                                    <div class="border text-center pt-2">
+                                        <h4 class="fs-26 font-w600"><span>22222</span> </h4>
+                                    </div>
+                                </td>
+                                <td class="pr-1">
+                                    <div class="border text-center pt-2">
+                                        <h4 class="fs-26 font-w600">
+										<span class="text-danger">2222</span>
+                                         
+                                        </h4>
+                                    </div>
+                                </td>
+                                <td class="pl-1">
+                                    <div class="border text-center pt-2">
+                                        <h4 class="fs-26 font-w600"><span>22</span> </h4>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="border text-center pt-2">
+                                        <h4 class="fs-26 font-w600">
+                                            22222
+                                        </h4>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <h4>LCV</h4>
+                                </td>
+                                <td>
+                                    <div class="border text-center pt-2">
+                                        <h4 class="fs-26 font-w600"><span>2222</span> </h4>
+                                    </div>
+                                </td>
+                                <td class="pr-1">
+                                    <div class="border text-center pt-2">
+                                        <h4 class="fs-26 font-w600">
+                                           22222
+                                        </h4>
+                                    </div>
+                                </td>
+                                <td class="pl-1">
+                                    <div class="border text-center pt-2">
+                                        <h4 class="fs-26 font-w600"><span>222</span> </h4>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="border text-center pt-2">
+                                        <h4 class="fs-26 font-w600">
+                                          22222
+                                        </h4>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <hr>
+                   </div>
+                </div>
+
+
+
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex">
+                                <h4 class="card-title  ml-3">RESPONSIVENESS</h4>
+                            </div>
+
+                          <div class="col-lg-12">
+                            <div class="card-header bg-info mb-3">
+                                <h4 class="mb-0 text-white">MTD OFFLINE</h4>
+                                </div>
+                                <div class="table-responsive1">
+                                    <table class="tablesaw table-bordered text-center">
+                                        <thead>
+                                            <th><h5>Actual</h5></th>
+                                            <th><h5>Target</h5></th>
+                                            <th><h5>Variance</h5></th>
+                                        </thead>
+                                        <tbody>
+                                                <tr>
+                                                    <th><h4 class="fs-26 font-w600 text-center"><b>2222</b></h4></th>
+                                                    <th><h4 class="fs-26 font-w600 text-center"><b>2222</b></h4></th>
+                                                    <th><h4 class="fs-26 font-w600 text-center"><b>
+                                                      222222
+                                                    </b></h4></th>
+                                                </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                        </div>
+                        <hr>
+
+                <div class="col-lg-12">
+                    <div class="card-header bg-info mb-3">
+                    <h4 class="mb-0 text-white">MTD FCW</h4>
+                    </div>
+                    <div class="table-responsive1">
+                        <table class="tablesaw table-bordered text-center">
+                            <thead>
+                                <th><h5>Actual</h5></th>
+                                <th><h5>Target</h5></th>
+                                <th><h5>Variance</h5></th>
+                            </thead>
+                            <tbody>
+                                    <tr>
+                                        <th><h4 class="fs-26 font-w600 text-center"><b>2222</b></h4></th>
+                                        <th><h4 class="fs-26 font-w600 text-center"><b>
+                                           2222
+                                        </b></h4 >
+                                        </th>
+                                        <th><h4 class="fs-26 font-w600 text-center"><b>
+                                               22222
+
+                                        </b></h4>
+                                        </th>
+                                    </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <hr>
+
+
+                <div class="col-lg-12">
+                    <div class="card-header bg-info mb-3">
+                    <h4 class="mb-0 text-white">MTD EFFICIENCY</h4>
+                    </div>
+                    <div class="table-responsive1">
+                        <table class="tablesaw table-bordered text-center">
+                            <thead>
+                                <th><h5>Actual</h5></th>
+                                <th><h5>Target</h5></th>
+                                <th><h5>Status</h5></th>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <th><h4><b>{222</b></h4></th>
+                                    <th><h4><b>
+                                       22
+                                    </b></h4></th>
+                                    <th class="text-center"><h4>
+                                       22
+                                      2
+
+                                        </h4></th>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+<!-- Row -->
+</div>
+<div class="row">
+  22222
+</div>
+
+<style type="text/css">
+
+
+</script>
+
+@endsection
+

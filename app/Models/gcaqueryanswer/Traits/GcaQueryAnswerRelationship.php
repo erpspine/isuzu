@@ -1,0 +1,61 @@
+<?php
+
+namespace App\Models\gcaqueryanswer\Traits;
+
+use App\Models\gcaauditcategory\GcaAuditReportCategory;
+use App\Models\gcaqueritemy\GcaQueryItem;
+use App\Models\gcaquerycategorycv\GcaQueryCategoryCv;
+use App\Models\shop\Shop;
+use App\Models\user\User;
+use App\Models\vehicle_units\vehicle_units;
+use App\Models\vehicletype\VehicleType;
+
+/**
+ * Class GcaQueryAnswerRelationship
+ */
+trait GcaQueryAnswerRelationship
+{
+
+
+
+    public function user()
+    {
+        return $this->hasOne(User::class,'id','user_id');
+    }
+    public function user_updated()
+    {
+        return $this->hasOne(User::class,'id','updated_by');
+    }
+    public function query_items()
+    {
+        return $this->hasMany(GcaQueryItem::class,'gca_query_id','id');
+    }
+    public function category()
+    {
+        return $this->hasOne(GcaQueryCategoryCv::class,'id','gca_query_category_id');
+    }
+    public function vehicle()
+    {
+        return $this->hasOne(vehicle_units::class,'id','vehicle_id');
+    }
+    public function vehicletype()
+    {
+        return $this->hasOne(VehicleType::class,'id','vehicle_type_id');
+    }
+    public function auditCategory()
+    {
+        return $this->hasOne(GcaAuditReportCategory::class,'id','gca_audit_report_category_id');
+    }
+    public function shop()
+    {
+        return $this->hasOne(Shop::class,'id','shop_id');
+    }
+
+    
+
+
+  
+
+
+
+}

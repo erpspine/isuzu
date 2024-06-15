@@ -1,0 +1,148 @@
+<?php
+
+namespace App\Http\Controllers\calibrationcert;
+
+use App\Http\Controllers\Controller;
+use App\Models\barcode\Barcode;
+use App\Models\shop\Shop;
+use App\Models\tcm\Tcm;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+
+class CalibrationCertController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index(Request $request)
+    {
+        $shops = Shop::where('is_gca_shop', 1)->get()->pluck('report_name', 'id');
+ 
+
+
+        if(!empty($request->shop_id)){
+            $shop_id=$request->shop_id;
+            $daterange=$request->daterange;
+
+            $datearr = explode('-', $daterange);
+            $datefrom = Carbon::createFromFormat('d/m/Y', $datearr[0])->format('Y-m-d');
+             $dateto = Carbon::createFromFormat('d/m/Y', $datearr[1])->format('Y-m-d');
+
+
+
+            $data = Tcm::whereBetween('last_calibration_date', [$datefrom, $dateto])->where('shop_id',  $shop_id)->get();
+         
+    
+
+        return view('calibrationcert.index')->with(compact('shops','data','shop_id','daterange'));
+
+        }
+
+
+        return view('calibrationcert.index')->with(compact('shops'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $units = $request->get('units');
+        $barcode_details = Barcode::where('id','8')->first();
+
+       $unit_details = [];
+         $total_qty = 0;
+
+          
+         foreach ($units as $value) {
+               $details = Tcm:: where('id',$value['unit_id'])->first();
+               $myDate =$details->next_calibration_date;
+               $dateresult = Carbon::createFromFormat('Y-m-d', $myDate)->isPast();
+               $status='OK';
+               if($dateresult){
+                $status='NOK';
+
+               }
+               $calibration_date=dateFormat($details->next_calibration_date);
+               $torque_type=$details->tool_type;
+               $sku=$details->sku;
+               $tool_id=$details->tool_id;
+             
+               
+             
+               
+
+             $unit_details[] = ['details' => array('tool_id'=>$tool_id,'status'=>$status,'cdate'=>$calibration_date,'torque_type'=>$torque_type,'sku'=>'sku'), 'qty' => $value['quantity']];
+             $total_qty += $value['quantity'];
+         }
+
+
+         
+
+
+return view('calibrationcert.calibrationlabel', compact('unit_details', 'barcode_details'))->render();
+
+
+
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
+    }
+}

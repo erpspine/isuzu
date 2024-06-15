@@ -1,0 +1,52 @@
+<?php
+
+namespace App\Models\tcmjoint;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use App\Models\tcmjoint\Traits\TcmJointRelationship;
+
+class TcmJoint extends Model
+{
+    use HasFactory,
+    TcmJointRelationship;
+    protected $fillable = [
+        'tcm_id',
+        'part_name_joint_id',
+        'station_used',
+        'upc',
+        'sheet_no',
+        'mean_toque',
+        'upper_control_limit',
+        'lower_control_limit',
+        'lower_specification_limit',
+        'upper_specification_limit',
+        'kcds_code',
+        'sample_size',
+        'image_one',
+        'image_two',
+        'image_three',
+        'frequency',
+        'production_tool',
+        'team_leader_id',
+        'shop_id',
+    
+    ];
+
+    protected $appends = ['imageUri'];
+    public function getImageUriAttribute()
+    {
+        if (isset($this->attributes['image_one'])) {
+
+            return url('upload/') . '/' . $this->attributes['image_one'];
+        }
+        if (isset($this->attributes['image_two'])) {
+
+            return url('upload/') . '/' . $this->attributes['image_two'];
+        }
+        if (isset($this->attributes['image_three'])) {
+
+            return url('upload/') . '/' . $this->attributes['image_three'];
+        }
+    }
+}

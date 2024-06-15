@@ -1,0 +1,145 @@
+<?php
+
+namespace App\Http\Controllers\monitoringsheet;
+
+use App\Http\Controllers\Controller;
+use App\Models\qcosmonitoringsheet\QcosMonitoringSheet;
+use DataTables;
+use Illuminate\Http\Request;
+
+class MonitoringSheetController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        try {
+           // $result = QcosMonitoringSheet::with(['vehicle.model'])->get();
+          //  dd($result);
+            if (request()->ajax()) {
+                $result = QcosMonitoringSheet::with(['vehicle.model'])->get();
+                return DataTables::of($result)
+                    ->addColumn('tool', function ($result) {
+                        return $result->tcm->tool_id;
+                    })
+                    ->addColumn('joints', function ($result) {
+                        return $result->joint->part_name_joint_id;
+                    })
+                    ->addColumn('reading_day', function ($result) {
+                        return dateFormat($result->joint->reading_date);
+                    })
+                    ->addColumn('v_model', function ($result) {
+                        return $result->joint->part_name_joint_id;
+                    })
+                    ->addColumn('vin_no', function ($result) {
+                        return $result->vehicle->vin_no;
+                    })
+                    ->addColumn('model', function ($result) {
+                        return $result->vehicle->model->model_name;
+                    })
+                    
+                    ->addColumn('action', function ($result) {
+                        return '
+                        <div class="btn-group">
+                        <button type="button" class="btn btn-dark dropdown-toggle"
+                            data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            <i class="ti-settings"></i>
+                        </button>
+                        <div class="dropdown-menu animated slideInUp"
+                            x-placement="bottom-start"
+                            style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, 35px, 0px);">
+                            <a class="dropdown-item" href="javascript:void(0)"><i
+                                    class="ti-eye"></i> Open</a>
+                            <a class="dropdown-item" href="#"><i
+                                    class="ti-pencil-alt"></i> Edit</a>
+                            <a class="dropdown-item delete_brand_button delete-tcm" href="#"><i
+                                    class="ti-trash"></i> Delete</a>
+                           
+                        </div>
+                    </div> 
+                    ';
+                    })
+                    ->make(true);
+            }
+            return view('monitoringsheet.index');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        //
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        //
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(QcosMonitoringSheet $monitoringsheet)
+    {
+        try {
+            $shops = [];
+            return view('monitoringsheet.edit', compact('monitoringsheet', 'shops'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+        
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
+    }
+}

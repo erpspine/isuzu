@@ -1,0 +1,455 @@
+<?php
+
+namespace App\Http\Controllers\gcacvchecksheetitem;
+
+use App\Http\Controllers\Controller;
+use App\Models\gcaquerycategorycv\GcaQueryCategoryCv;
+use App\Models\gcaquerycategoryitemcv\GcaQueryCategoryItemCv;
+use App\Models\gcasteps\GcaSteps;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use DataTables;
+use DB;
+use Log;
+
+class GcaCvChecksheetItemController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create(Request $request)
+    {
+        $steps = GcaSteps::pluck('title', 'id');
+
+        if ($request->input('query_category')) {
+            // dd($request->query_category);
+
+            $input = $request->all();
+            $ccat = $input['query_category'];
+            $data = GcaSteps::whereHas('titles', function ($query) use ($ccat) {
+                $query->where('query_group_name', $ccat);
+            })->pluck('id', 'title');
+            $gca_stage_id = $input['gca_stage_id'];
+            $querycategory = GcaQueryCategoryCv::whereHas('titles', function ($query) use ($ccat, $gca_stage_id) {
+                $query->where('query_group_name', $ccat);
+                $query->where('gca_stage_id', $gca_stage_id);
+            })->pluck('name', 'id');
+
+            $records=GcaQueryCategoryItemCv::where('gca_query_category_cv_id',$input['query_category_id'])->get();
+           
+
+
+            return view('gcacvchecksheetitem.create')->with(compact('steps', 'data', 'input', 'querycategory','records'));
+        }
+        return view('gcacvchecksheetitem.create', compact('steps'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+       if (request()->ajax()) {
+            try {
+                $input = $request->except(['_token']);
+                $validator = Validator::make($request->all(), [
+                    'query_category' => 'bail|required',
+                    'gca_stage_id' => 'bail|required',
+                    'gca_query_category_cv_id' => 'bail|required',
+                ]);
+                // Check validation failure
+                $noerrors = true;
+                if ($validator->fails()) {
+                    $output = [
+                        'success' => false,
+                        'msg' => "Make sure you capture all required fields",
+                    ];
+                    $noerrors = false;
+                }
+                if (empty($input['defect_name'])) {
+                    $output = [
+                        'success' => false,
+                        'msg' => "Make sure capture category",
+                    ];
+                    $noerrors = false;
+                }
+
+                if ($noerrors) {
+                    DB::beginTransaction();
+
+                    $result = GcaQueryCategoryCv::find($input['gca_query_category_cv_id']);
+                    $db_array=GcaQueryCategoryItemCv::where('gca_query_category_cv_id', $result->id)->pluck('id')->toArray();
+
+$input_array = $request->input('item_id');
+$deleted = array_diff($db_array, $input_array);   
+
+
+
+                    if(isset($deleted )){
+                        GcaQueryCategoryItemCv::whereIn('id', $deleted)->delete();
+                    }
+
+
+
+                    if ($input['query_category'] == 'Function') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+
+                            $itemid= (isset($input['item_id'][$key])) ? $input['item_id'][$key] : 0;
+                            $criteria = ['id' => $itemid];
+
+                            $data= array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'vehicle_type' => 'CV',
+                                'gca_query_category_cv_id' => $result->id,
+                                'defect_condition' => $input['defect_condition'][$key],
+                                'defect_position' => $val,
+                                'loose' => (isset($input['loose'][$key])) ? $input['loose'][$key] : 0,
+                                'dermaged' => (isset($input['dermaged'][$key])) ? $input['dermaged'][$key] : 0,
+                                'wrong_assembly' => (isset($input['wrong_assembly'][$key])) ? $input['wrong_assembly'][$key] : 0,
+                                'lack_of_parts' => (isset($input['lack_of_parts'][$key])) ? $input['lack_of_parts'][$key] : 0,
+                                'function_defect' => (isset($input['function_defect'][$key])) ? $input['function_defect'][$key] : 0,
+                                'factor_ten' => (isset($input['factor_ten'][$key])) ? $input['factor_ten'][$key] : 0,
+                                'factor_fifty' => (isset($input['factor_fifty'][$key])) ? $input['factor_fifty'][$key] : 0,
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+                            GcaQueryCategoryItemCv::updateOrCreate($criteria, $data);
+                        }
+                    } elseif ($input['query_category'] == 'Paint') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+
+                           $itemid= (isset($input['item_id'][$key])) ? $input['item_id'][$key] : 0;
+                           $criteria = ['id' => $itemid];
+                            $data=array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'vehicle_type' => 'CV',
+                                'gca_query_category_cv_id' => $result->id,
+                                'defect_condition' => $input['defect_condition'][$key],
+                                'defect_position' => $val,
+                                'factor_zero' => (isset($input['factor_zero'][$key])) ? $input['factor_zero'][$key] : 0,
+                                'factor_one' => (isset($input['factor_one'][$key])) ? $input['factor_one'][$key] : 0,
+                                'factor_ten' => (isset($input['factor_ten'][$key])) ? $input['factor_ten'][$key] : 0,
+                                'factor_fifty' => (isset($input['factor_fifty'][$key])) ? $input['factor_fifty'][$key] : 0,
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+
+                            GcaQueryCategoryItemCv::updateOrCreate($criteria, $data);
+
+                           
+
+                        }
+                    } elseif ($input['query_category'] == 'Functional Weighting Standard') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+                            $itemid= (isset($input['item_id'][$key])) ? $input['item_id'][$key] : 0;
+                            $criteria = ['id' => $itemid];
+                            $data= array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'vehicle_type' => 'CV',
+                                'phenomenon' => $input['phenomenon'][$key],
+                                'gca_query_category_cv_id' => $result->id,
+                                'defect_position' => $val,
+                                'factor_zero' => (isset($input['factor_zero'][$key])) ? $input['factor_zero'][$key] : 0,
+                                'factor_one' => (isset($input['factor_one'][$key])) ? $input['factor_one'][$key] : 0,
+                                'factor_ten' => (isset($input['factor_ten'][$key])) ? $input['factor_ten'][$key] : 0,
+                                'factor_fifty' => (isset($input['factor_fifty'][$key])) ? $input['factor_fifty'][$key] : 0,
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+
+                            GcaQueryCategoryItemCv::updateOrCreate($criteria, $data);
+                        }
+                    }elseif ($input['query_category'] == 'Label' || $input['query_category'] == 'Lamp'  ) {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+                            $itemid= (isset($input['item_id'][$key])) ? $input['item_id'][$key] : 0;
+                            $criteria = ['id' => $itemid];
+                            $data= array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'vehicle_type' => 'CV',
+                                'defect_position' => $val,
+                                'gca_query_category_cv_id' => $result->id,
+                                'zone_a' => $input['zone_a'][$key],
+                                'zone_b' => $input['zone_b'][$key],
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+                            GcaQueryCategoryItemCv::updateOrCreate($criteria, $data);
+                        }
+                    }elseif ($input['query_category'] == 'Oil Filling') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+                            $itemid= (isset($input['item_id'][$key])) ? $input['item_id'][$key] : 0;
+                            $criteria = ['id' => $itemid];
+                            $data= array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'vehicle_type' => 'CV',
+                                'defect_position' => $val,
+                                'gca_query_category_cv_id' => $result->id,
+                                'zone_a' => $input['zone_a'][$key],
+                                'zone_b' => $input['zone_b'][$key],
+                                'zone_c' => $input['zone_c'][$key],
+                                'zone_d' => $input['zone_d'][$key],
+                                'zone_e' => $input['zone_e'][$key],
+                                'zone_f' => $input['zone_f'][$key],
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+
+                            GcaQueryCategoryItemCv::updateOrCreate($criteria, $data);
+                        }
+                    }elseif ($input['query_category'] == 'ZoneABC') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+                            $itemid= (isset($input['item_id'][$key])) ? $input['item_id'][$key] : 0;
+                            $criteria = ['id' => $itemid];
+
+                            $data= array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'vehicle_type' => 'CV',
+                                'defect_condition' => $input['defect_condition'][$key],
+                                'gca_query_category_cv_id' => $result->id,
+                                'defect_position' => $val,
+                                'zone_a' => $input['zone_a'][$key],
+                                'zone_b' => $input['zone_b'][$key],
+                                'zone_c' => $input['zone_c'][$key],
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+
+                            GcaQueryCategoryItemCv::updateOrCreate($criteria, $data);
+                        }
+                    }
+                    elseif ($input['query_category'] == 'ABCD') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+
+                            $data[] = array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'defect_condition' => $input['defect_condition'][$key],
+                                'phenomenon' => $input['phenomenon'][$key],
+                                'defect_position' => $val,
+                                'zone_a' => (isset($input['zone_a'][$key])) ? $input['zone_a'][$key] : 0,
+                                'zone_b' =>  (isset($input['zone_b'][$key])) ? $input['zone_b'][$key] : 0,
+                                'zone_c' =>  (isset($input['zone_c'][$key])) ? $input['zone_c'][$key] : 0,
+                                'zone_d' =>  (isset($input['zone_d'][$key])) ? $input['zone_d'][$key] : 0,
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+                        }
+                    }elseif ($input['query_category'] == 'Exterior-Interior') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+
+                            $data[] = array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'defect_condition' => $input['defect_condition'][$key],
+                                'phenomenon' => $input['phenomenon'][$key],
+                                'defect_position' => $val,
+                                'zone_a' => (isset($input['zone_a'][$key])) ? $input['zone_a'][$key] : 0,
+                                'zone_b' =>  (isset($input['zone_b'][$key])) ? $input['zone_b'][$key] : 0,
+                                'zone_c' =>  (isset($input['zone_c'][$key])) ? $input['zone_c'][$key] : 0,
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+                        }
+                    }elseif ($input['query_category'] == 'ExteriorAB-Interior') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+
+                            $data[] = array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'defect_condition' => $input['defect_condition'][$key],
+                                'phenomenon' => $input['phenomenon'][$key],
+                                'defect_position' => $val,
+                                'zone_a' => (isset($input['zone_a'][$key])) ? $input['zone_a'][$key] : 0,
+                                'zone_b' =>  (isset($input['zone_b'][$key])) ? $input['zone_b'][$key] : 0,
+                                'zone_c' =>  (isset($input['zone_c'][$key])) ? $input['zone_c'][$key] : 0,
+                                'zone_d' =>  (isset($input['zone_d'][$key])) ? $input['zone_d'][$key] : 0,
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+                        }
+                    }elseif ($input['query_category'] == 'No-Zones') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+
+                            $data[] = array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'defect_condition' => $input['defect_condition'][$key],
+                                'phenomenon' => $input['phenomenon'][$key],
+                                'defect_position' => $val,
+                                'zone_a' => (isset($input['zone_a'][$key])) ? $input['zone_a'][$key] : 0,
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+                        }
+                    }elseif ($input['query_category'] == 'Safety') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+
+                            $data[] = array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'defect_condition' => $input['defect_condition'][$key],
+                                'defect_position' => $val,
+                                'loose' => (isset($input['loose'][$key])) ? $input['loose'][$key] : 0,
+                                'dermaged' => (isset($input['dermaged'][$key])) ? $input['dermaged'][$key] : 0,
+                                'wrong_assembly' => (isset($input['wrong_assembly'][$key])) ? $input['wrong_assembly'][$key] : 0,
+                                'lack_of_parts' => (isset($input['lack_of_parts'][$key])) ? $input['lack_of_parts'][$key] : 0,
+                                'function_defect' => (isset($input['function_defect'][$key])) ? $input['function_defect'][$key] : 0,
+                                'factor_ten' => (isset($input['factor_ten'][$key])) ? $input['factor_ten'][$key] : 0,
+                                'factor_one' => (isset($input['factor_one'][$key])) ? $input['factor_one'][$key] : 0,
+                                'factor_fifty' => (isset($input['factor_fifty'][$key])) ? $input['factor_fifty'][$key] : 0,
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+                        }
+                    }elseif ($input['query_category'] == 'Weight Factor') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+
+                            $data[] = array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'defect_condition' => $input['defect_condition'][$key],
+                                'defect_position' => $val,
+                                'zone_a' => (isset($input['zone_a'][$key])) ? $input['zone_a'][$key] : 0,
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+                        }
+                    }elseif ($input['query_category'] == 'Fluid-Level') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+
+                            $data[] = array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'defect_position' => $val,
+                                'zone_a' => $input['zone_a'][$key],
+                                'zone_b' => $input['zone_b'][$key],
+                                'zone_c' => $input['zone_c'][$key],
+                                'zone_d' => $input['zone_d'][$key],
+                                'zone_e' => $input['zone_e'][$key],
+                                'zone_f' => $input['zone_f'][$key],
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+                        }
+                    }elseif ($input['query_category'] == 'Noise') {
+                        $data = [];
+                        foreach ($request->input('defect_position') as $key => $val) {
+
+                            $data[] = array(
+                                'defect_name' => $input['defect_name'][$key],
+                                'defect_position' => $val,
+                                'zone_a' => $input['zone_a'][$key],
+                                'zone_b' => $input['zone_b'][$key],
+                                'zone_c' => $input['zone_c'][$key],
+                                'query_category' => $input['query_category'],
+                                'gca_stage_id' => $input['gca_stage_id'],
+                            );
+                        }
+                    }
+
+                    
+                    
+                    //$result->categoryItems()->delete();
+                    //$result->categoryItems()->createMany($data);
+                    DB::commit();
+                    $output = [
+                        'success' => true,
+                        'msg' => "Query Item Addeded Successfully"
+                    ];
+                }
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+                $output = [
+                    'success' => false,
+                    'msg' => $e->getMessage(),
+                ];
+            }
+            return $output;
+       }
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
+    }
+    public function load_gca_stage(Request $request)
+    {
+        $term = $request->term; // Search term from Select2
+        $data = GcaSteps::whereHas('titles', function ($query) use ($term) {
+            $query->where('query_group_name', $term);
+        })->get(['id', 'title']); // Adjust columns as needed
+        return response()->json($data);
+    }
+    public function load_gca_query_category(Request $request)
+    {
+        $query_category = $request->query_category; // Search term from Select2
+        $gca_stage_id = $request->gca_stage_id; // Search term from Select2
+        $data = GcaQueryCategoryCv::whereHas('titles', function ($query) use ($query_category, $gca_stage_id) {
+            $query->where('query_group_name', $query_category);
+            $query->where('vehicle_type', 'CV');
+            $query->where('gca_stage_id', $gca_stage_id);
+        })->get(); // Adjust columns as needed
+        return response()->json($data);
+    }
+}

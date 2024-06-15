@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+
+tr:nth-child(even) {
+  background-color: #dddddd;
+}
+</style>
+</head>
+<body>
+ <p>Hi,</p>
+<p>Please be advised that an overtorque/undertoque reading has been recorded during the Tightening Torque Sample Check.</p>
+   
+
+<table>
+  <tr>
+    <th>Name</th>
+    <th>Item</th>
+  </tr>
+  <tr>
+    <td>TOOL ID</td>
+    <td>{{ $details['tool_id'] }}</td>
+  </tr>
+  <tr>
+    <td>JOINT ID</td>
+    <td>{{ $details['joint_id'] }}</td>
+  </tr>
+  <tr>
+    <td>MODEL</td>
+    <td>{{ $details['model'] }}</td>
+  </tr>
+  <tr>
+    <td>VEHICLE </td>
+    <td>{{ $details['vehicle'] }}</td>
+  </tr>
+  <tr>
+    <td>LOT  </td>
+    <td>{{ $details['lot'] }}</td>
+  </tr>
+  <tr>
+    <td>JOB </td>
+    <td>{{ $details['job'] }}</td>
+  </tr>
+  <tr>
+    <td>USL </td>
+    <td>{{ $details['usl'] }}</td>
+  </tr>
+  <tr>
+    <td>LSL </td>
+    <td>{{ $details['lsl'] }}</td>
+  </tr>
+  <tr>
+    <td>READING </td>
+    <td>{{ $details['reading'] }}</td>
+  </tr>
+  <tr>
+    <td>STATUS </td>
+    <td>{{ $details['status'] }}</td>
+  </tr>
+
+ 
+</table>
+<p>The calibration of the torque tool and containment actions can be tracked via the link below:<p>
+  <p><a href="http://172.16.16.57/ttmsactionplan">TTSM Action Plan Link</a></p>
+<p>The Torque Calibration Technician and Line Team Leader have been notified</p>
+<p>Isuzu PQCS</p>
+
+</body>
+</html>
+

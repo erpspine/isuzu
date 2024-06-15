@@ -1,0 +1,412 @@
+@extends('layouts.app')
+@section('title', 'Gca Defects List')
+@section('content')
+    <!-- ============================================================== -->
+    <!-- Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+    <div class="row page-titles">
+        <div class="col-md-5 col-12 align-self-center">
+            <h3 class="text-themecolor mb-0">Gca DEFECT LIST </h3>
+            <ol class="breadcrumb mb-0 p-0 bg-transparent">
+                <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                <li class="breadcrumb-item active">Gca DEFECT LIST</li>
+            </ol>
+        </div>
+        <div class="col-md-7 col-12 align-self-center d-none d-md-block">
+            <div class="d-flex mt-2 justify-content-end">
+            </div>
+        </div>
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- Container fluid  -->
+    <!-- ============================================================== -->
+    <div class="container-fluid">
+        <div class="content-header row pb-1">
+            <div class="content-header-left col-md-6 col-12 mb-2">
+                <h3 class="mb-0">GCA DEFECT  LIST</h3>
+            </div>
+            <div class="content-header-right col-md-6 col-12">
+                <div class="media width-250 float-right">
+                    <div class="media-body media-right text-right">
+                      
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Individual column searching (select inputs) -->
+        <div class="card">
+            <div class="card-header">
+                Filters
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    {!! Form::label('vehicle_type', 'Vehicle Type :') !!}
+                                    {!! Form::select('vehicle_type', ['CV'=>'CV','LCV'=>'LCV'], null, [
+                                        'class' => 'form-control select2',
+                                        'style' => 'width:100%',
+                                        'id' => 'vehicle_type',
+                                        'placeholder' => 'Select',
+                                    ]) !!}
+                                </div>
+                            </div>
+
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    {!! Form::label('shop_id', 'Shop :') !!}
+                                    {!! Form::select('shop_id', $shops, null, [
+                                        'class' => 'form-control select2',
+                                        'style' => 'width:100%',
+                                        'id' => 'shop_id',
+                                        'placeholder' => 'Select',
+                                    ]) !!}
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    {!! Form::label('is_corrected', 'Status:') !!}
+                                    {!! Form::select('status', ['OPEN' => 'OPEN', 'CLOSED' => 'CLOSED'], null, [
+                                        'class' => 'form-control select2',
+                                        'style' => 'width:100%',
+                                        'id' => 'status',
+                                        'placeholder' => 'Select',
+                                    ]) !!}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    {!! Form::label('gca_audit_report_category_id', 'Category :') !!}
+                                    {!! Form::select('gca_audit_report_category_id', $category, null, [
+                                        'class' => 'form-control select2',
+                                        'style' => 'width:100%',
+                                        'id' => 'gca_audit_report_category_id',
+                                        'placeholder' => 'Select',
+                                    ]) !!}
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <h4 class="card-title">Select Date:</h4>
+                                <div class='input-group'>
+                                    <input type='text' name="daterange" class="form-control shawCalRangese" id="daterange" />
+
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-bordered" id="tools">
+                                <thead>
+                                    <tr>
+                                        <th>Action</th>
+                                        <th>Date</th>
+                                        <th>Shop</th>
+                                        <th>Vehicle Type</th>
+                                        <th>Vehicle</th>
+                                        <th>Lot & Job</th>
+                                        <th>UPC/FNA/SHEET NO</th>
+                                        <th>Category</th>
+                                        <th>Description</th>
+                                        <th>Count</th>
+                                        <th>Weight</th>
+                                        
+                                        <th>Responsible</th>
+                                        <th>Containment Status</th>
+                                        <th>Image</th>
+                                    
+                                        
+                                    </tr>
+                                </thead>
+                            </table>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endsection
+    @section('after-styles')
+    {{ Html::style('assets/libs/datepicker/datepicker.min.css') }}
+    {{ Html::style('assets/extra-libs/toastr/dist/build/toastr.min.css') }}
+    {{ Html::style('assets/libs/sweetalert2/dist/sweetalert2.min.css') }}
+    {{ Html::style('assets/libs/select2/dist/css/select2.min.css') }}
+    {{ Html::style('assets/libs/select2/dist/css/select2-bootstrap.css') }}
+    @endsection
+    @section('after-scripts')
+    {{ Html::script('assets/libs/moment/moment.js') }}
+    {{ Html::script('assets/libs/datepicker/datepicker.min.js') }}
+    {{ Html::script('assets/extra-libs/toastr/dist/build/toastr.min.js') }}
+    {{ Html::script('assets/extra-libs/toastr/toastr-init.js') }}
+    {{ Html::script('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}
+    {{ Html::script('assets/libs/select2/dist/js/select2.full.min.js') }}
+    {{ Html::script('assets/libs/select2/dist/js/select2.min.js') }}
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $(document).on('submit', 'form#category_add_form', function(e) {
+                    e.preventDefault();
+                    $(this)
+                        .find('button[type="submit"]')
+                        .attr('disabled', true);
+                    var data = $(this).serialize();
+                    $.ajax({
+                        method: 'POST',
+                        url: $(this).attr('action'),
+                        dataType: 'json',
+                        data: data,
+                        success: function(result) {
+                            if (result.success === true) {
+                                $('div.category_modal').modal('hide');
+                                toastr.success(result.msg);
+                                category_table.ajax.reload();
+                            } else {
+                                toastr.error(result.msg);
+                            }
+                        },
+                    });
+                });
+            });
+
+              // capital_account_table
+              var tools = $('#tools').DataTable({
+                processing: true,
+                //serverSide: true,
+                ajax: {
+                    url: '{{ route('gcadefects') }}',
+                    data: function(d) {
+                        d.shop_id = $('#shop_id').val();
+                        d.vehicle_type = $('#vehicle_type').val();
+                        d.status = $('#status').val();
+                        d.gca_audit_report_category_id = $('#gca_audit_report_category_id').val();
+                        d.daterange = $('#daterange').val();
+                      
+                    }
+                },
+                columns: [{
+                        data: 'action',
+                        name: 'action'
+                    },
+                    {
+                        data: 'date',
+                        name: 'date'
+                    },
+                    {
+                        data: 'shops',
+                        name: 'shops'
+                    },
+                    {
+                        data: 'vehicle_type',
+                        name: 'vehicle_type'
+                    },
+                    {
+                        data: 'chasis',
+                        name: 'chasis'
+                    },
+                    {
+                        data: 'lotjob',
+                        name: 'lotjob'
+                    },
+                    {
+                        data: 'gca_manual_reference',
+                        name: 'gca_manual_reference'
+                    },
+                    {
+                        data: 'categoryname',
+                        name: 'categoryname'
+                    },
+                    {
+                        data: 'defect',
+                        name: 'defect'
+                    },
+                    {
+                        data: 'defect_count',
+                        name: 'defect_count'
+                    },
+                    {
+                        data: 'weight',
+                        name: 'weight'
+                    },
+                  
+                    {
+                        data: 'responsible_team_leader',
+                        name: 'responsible_team_leader'
+                    },
+                    {
+                        data: 'status',
+                        name: 'status'
+                    },  {
+                        data: 'image',
+                        name: 'image'
+                    }
+                ],
+                order: [
+                    ['2', 'asc']
+                ],
+                'columnDefs': [{
+                    "orderable": false,
+                    "searchable": false,
+                    'targets': [0]
+                }],
+                'select': {
+                    style: 'multi',
+                    selector: 'td:first-child'
+                },
+                'lengthMenu': [
+                    [10, 25, 50, -1],
+                    [10, 25, 50, "All"]
+                ],
+                dom: '<"row"lfB>rtip',
+                buttons: [{
+                        extend: 'pdf',
+                        text: '<i title="export to pdf" class="fas fa-file-pdf"></i>',
+                        exportOptions: {
+                            columns: ':visible:Not(.not-exported)',
+                            rows: ':visible'
+                        },
+                        footer: true
+                    },
+                    {
+                        extend: 'csv',
+                        text: '<i title="export to csv" class="fas fa-file-alt"></i>',
+                        exportOptions: {
+                            columns: ':visible:Not(.not-exported)',
+                            rows: ':visible'
+                        },
+                        footer: true
+                    },
+                    {
+                        extend: 'print',
+                        text: '<i title="print" class="fa fa-print"></i>',
+                        exportOptions: {
+                            columns: ':visible:Not(.not-exported)',
+                            rows: ':visible'
+                        },
+                        footer: true
+                    },
+                    {
+                        extend: 'colvis',
+                        text: '<i title="column visibility" class="fa fa-eye"></i>',
+                        columns: ':gt(0)'
+                    },
+                ],
+            });
+
+
+
+
+         
+            $('table#appusers tbody').on('click', 'a.reset-password', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    type: 'warning',
+                    title: "Are You Sure",
+                    showCancelButton: true,
+                    buttons: true,
+                    dangerMode: true,
+                }).then((willDelete) => {
+                    if (willDelete.value) {
+                        var href = $(this).attr('href');
+                        $.ajax({
+                            method: "GET",
+                            url: href,
+                            dataType: "json",
+                            success: function(result) {
+                                if (result.success == true) {
+                                    toastr.success(result.msg);
+                                    appusers.ajax.reload();
+                                } else {
+                                    toastr.error(result.msg);
+                                }
+                            }
+                        });
+                    } else {
+                        Swal.fire('Passord not reset', '', 'info')
+                    }
+                });
+            });
+            $('table#tools tbody').on('click', 'a.delete-tcm', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    type: 'warning',
+                    title: "Are You Sure",
+                    showCancelButton: true,
+                    buttons: true,
+                    dangerMode: true,
+                }).then((willDelete) => {
+                    if (willDelete.value) {
+                        var href = $(this).attr('href');
+                        $.ajax({
+                            method: "DELETE",
+                            url: href,
+                            dataType: "json",
+                            data: {
+                                '_token': '{{ csrf_token() }}',
+                            },
+                            success: function(result) {
+                                if (result.success == true) {
+                                    toastr.success(result.msg);
+                                    tools.ajax.reload();
+                                } else {
+                                    toastr.error(result.msg);
+                                }
+                            }
+                        });
+                    } else {
+                        Swal.fire('Tool not deleted', '', 'info')
+                    }
+                });
+            });
+
+            $(".select2").select2({
+                theme: "bootstrap",
+                width: 'auto',
+                dropdownAutoWidth: true,
+            });
+
+            $(function(){
+        'use strict'
+        $('.shawCalRangese').daterangepicker({
+      
+           autoUpdateInput: false,
+        ranges: {
+            'Today': [moment(), moment()],
+            'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+            'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+            'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+            'This Month': [moment().startOf('month'), moment().endOf('month')],
+            'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')], 
+        },
+                alwaysShowCalendars: true,
+              
+            });
+        });
+
+        
+        $('.shawCalRangese').on('apply.daterangepicker', function(ev, picker) {
+      $(this).val(picker.startDate.format('DD/MM/YYYY') + '-' + picker.endDate.format('DD/MM/YYYY'));
+      tools.ajax.reload();
+  });
+
+  $('.shawCalRangese').on('cancel.daterangepicker', function(ev, picker) {
+      $(this).val('');
+      tools.ajax.reload();
+  });
+
+  $(document).on('change', '#status, #vehicle_type, #gca_audit_report_category_id, #shop_id',
+                function() {
+                    tools.ajax.reload();
+                });
+        </script>
+    @endsection

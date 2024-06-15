@@ -1,0 +1,247 @@
+<?php
+
+namespace App\Http\Controllers\qcoscalibration;
+
+use App\Http\Controllers\Controller;
+use App\Models\calibrationhistory\CalibrationHistory;
+use App\Models\tcm\Tcm;
+use Carbon\Carbon;
+use DataTables;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
+class QcosCalibration extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        try {
+            if (request()->ajax()) {
+                $calibration = CalibrationHistory::get();
+                return DataTables::of($calibration)
+                ->addColumn('tool_name', function ($calibration) {
+                    return $calibration->tools->tool_id;
+                })
+                ->addColumn('date_calibrated', function ($calibration) {
+                    return dateFormat($calibration->date_calibrated);
+                })
+                ->addColumn('next_calibration_date', function ($calibration) {
+                    return dateFormat($calibration->next_calibration_date);
+                })
+                  
+                    ->addColumn('action', function ($calibration) {
+                        return '
+                        <div class="btn-group">
+                        <button type="button" class="btn btn-dark dropdown-toggle"
+                            data-toggle="dropdown" aria-haspopup="true"
+                            aria-expanded="false">
+                            <i class="ti-settings"></i>
+                        </button>
+                        <div class="dropdown-menu animated slideInUp"
+                            x-placement="bottom-start"
+                            style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, 35px, 0px);">
+                            <a class="dropdown-item" href="javascript:void(0)"><i
+                                    class="ti-eye"></i> Open</a>
+                            <a class="dropdown-item" href="' . route('qcoscalibration.edit', [$calibration->id]) . '"><i
+                                    class="ti-pencil-alt"></i> Edit</a>
+                            <a class="dropdown-item delete_brand_button delete-tcm" href="' . route('qcoscalibration.destroy', [$calibration->id]) . '"><i
+                                    class="ti-trash"></i> Delete</a>
+                           
+                        </div>
+                    </div> 
+                    ';
+                    })
+                    ->make(true);
+            }
+            return view('qcoscalibration.index');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+        try {
+            $tools = Tcm::get();
+            return view('qcoscalibration.create', compact('tools'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'tcm_id' => 'bail|required',
+            'date_calibrated' => 'bail|required',
+        ]);
+        // Check validation failure
+        $validate=true;
+        if ($validator->fails()) {
+            $output = [
+                'success' => false,
+                'msg' => "It appears you have forgotten to complete something",
+            ];
+            $validate=false;
+        }
+        $data = $request->except(['_token']);
+        $daystocalibration=Tcm::find($data['tcm_id']);
+
+        if($daystocalibration->days_to_next_calibrarion > 0) {
+            
+        }else{
+            $output = [
+                'success' => false,
+                'msg' => "Days to neext Callibration Date is Missing",
+            ];
+            $validate=false;
+
+        }
+
+
+       
+        // Check validation success
+        if ($validate) {
+            $data['date_calibrated'] = date_for_database($data['date_calibrated']);
+            $next_calibration_date = Carbon::createFromFormat('Y-m-d', $data['date_calibrated']);
+            $next_calibration_date  = $next_calibration_date->addDays($daystocalibration->days_to_next_calibrarion);
+            $data['next_calibration_date'] = $next_calibration_date;
+            $data['created_by'] = auth()->user()->id;
+            if (request()->ajax()) {
+                try {
+                    $result = CalibrationHistory::create($data);
+                    $tool_details=Tcm::find($result->tcm_id);
+                    $tool_details->last_calibration_date=$result->date_calibrated;
+                    $tool_details->days_to_next_calibrarion=$result->days_to_next_calibrarion;
+                    $tool_details->next_calibration_date=$result->next_calibration_date;
+                    $tool_details->update();
+
+                    $output = [
+                        'success' => true,
+                        'msg' => "Calibration Done Successfully"
+                    ];
+                } catch (\Exception $e) {
+                    \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+                    $output = [
+                        'success' => false,
+                        'msg' => $e->getMessage(),
+                    ];
+                }
+            }
+        }
+        return $output;
+    }
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        //
+    }
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(CalibrationHistory $qcoscalibration)
+    {
+        try {
+            $tools = Tcm::get();
+            return view('qcoscalibration.edit', compact('qcoscalibration', 'tools'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+    }
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'tcm_id' => 'bail|required',
+            'date_calibrated' => 'bail|required',
+        ]);
+        // Check validation failure
+        $validate=true;
+        if ($validator->fails()) {
+            $output = [
+                'success' => false,
+                'msg' => "It appears you have forgotten to complete something",
+            ];
+            $validate=false;
+        }
+        $data = $request->except(['_token']);
+        $daystocalibration=Tcm::find($data['tcm_id']);
+
+        if (empty($daystocalibration->days_to_next_calibrarion)) {
+            $output = [
+                'success' => false,
+                'msg' => "Days to neext Callibration Date is Missing",
+            ];
+            $validate=false;
+        }
+
+        $data['date_calibrated'] = date_for_database($data['date_calibrated']);
+        $next_calibration_date = Carbon::createFromFormat('Y-m-d', $data['date_calibrated']);
+        $next_calibration_date  = $next_calibration_date->addDays($daystocalibration->days_to_next_calibrarion);
+        $data['next_calibration_date'] = $next_calibration_date;
+        $data['created_by'] = auth()->user()->id;
+        // Check validation success
+        if ($validate) {
+            if (request()->ajax()) {
+                try {
+                    $result = CalibrationHistory::find($id);
+                    $result->update($data);
+                    $tool_details=Tcm::find($result->tcm_id);
+                    $tool_details->last_calibration_date=$result->date_calibrated;
+                    $tool_details->days_to_next_calibrarion=$result->days_to_next_calibrarion;
+                    $tool_details->next_calibration_date=$result->next_calibration_date;
+                    $tool_details->update();
+
+                    $output = [
+                        'success' => true,
+                        'msg' => "Calibration Done Successfully"
+                    ];
+                } catch (\Exception $e) {
+                    \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+                    $output = [
+                        'success' => false,
+                        'msg' => $e->getMessage(),
+                    ];
+                }
+            }
+        }
+        return $output;
+    }
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        //
+    }
+}

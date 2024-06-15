@@ -1,0 +1,286 @@
+@extends('layouts.app')
+@section('title', 'Gca LCV Audit Checksheet')
+@section('content')
+    <!-- ============================================================== -->
+    <!-- Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+    <div class="row page-titles">
+        <div class="col-md-5 col-12 align-self-center">
+            <h3 class="text-themecolor mb-0">Gca LCV Audit Checksheet Category</h3>
+            <ol class="breadcrumb mb-0 p-0 bg-transparent">
+                <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+                <li class="breadcrumb-item active">Create </li>
+            </ol>
+        </div>
+        <div class="col-md-7 col-12 align-self-center d-none d-md-block">
+        </div>
+    </div>
+    <!-- ============================================================== -->
+    <!-- End Bread crumb and right sidebar toggle -->
+    <!-- ============================================================== -->
+    <!-- ============================================================== -->
+    <!-- Container fluid  -->
+    <!-- ============================================================== -->
+    <div class="container-fluid">
+        <div class="content-header row pb-1">
+            <div class="content-header-left col-md-6 col-12 mb-2">
+            </div>
+            <div class="content-header-right col-md-6 col-12">
+                <div class="media width-250 float-right">
+                    <div class="media-body media-right text-right">
+                        @include('gcachecksheetlcv.partial.gcachecksheetlcv-header-buttons')
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Individual column searching (select inputs) -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        {{ Form::open(['route' => 'gcalcvchecksheet.create', 'class' => 'form-horizontal', 'files' => true, 'role' => 'form', 'method' => 'get']) }}
+                        <div class="row mb-5">
+                            <div class="col-md-6">
+                                <div class="form-group row">
+                                    <label class="control-label text-right col-md-4">Template</label>
+                                    <div class="col-md-8">
+                                        {!! Form::select(
+                                            'query_category',
+                                            [
+                                                'Label' => 'Label',
+                                                'ZoneABC' => 'ZoneABC',
+                                                'No-Zones' => 'No-Zones',
+                                                'Exterior-Interior' => 'Exterior-Interior',
+                                                'ExteriorAB-Interior' => 'ExteriorAB-Interior',
+                                                'ABCD' => 'ABCD',
+                                                'Fluid-Level' => 'Fluid-Level',
+                                                'Noise' => 'Noise',
+                                                'Safety' => 'Safety',
+                                                'Weight Factor' => 'Weight Factor',
+                                                
+                                                
+                                            ],
+                                            isset($data['query_category']) ? $data['query_category'] : null,
+                                            [
+                                                'class' => 'select2 form-control custom-select',
+                                                'placeholder' => 'Select Template',
+                                                'style' => 'height: 25px;width: 100%;',
+                                                'required' => 'required',
+                                            ],
+                                        ) !!}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group row">
+                                    {{ Form::submit('Set Category', ['class' => 'btn btn-info btn-md']) }}
+                                </div>
+                            </div>
+                        </div> <!-- end row -->
+                        {{ Form::close() }}
+                        <hr>
+                        @if (isset($data))
+                            {{ Form::open(['route' => 'gcalcvchecksheet.store', 'class' => 'form-horizontal', 'role' => 'form', 'method' => 'post', 'id' => 'create-checksheet']) }}
+                            {!! Form::hidden('query_group_name', $data['query_category']) !!}
+                            <div class="row">
+                                <!--/span-->
+                                <div class="col-md-6">
+                                    <div class="form-group row">
+                                        <label class="control-label text-right col-md-4">Category Name:</label>
+                                        <div class="col-md-8">
+                                            {!! Form::text('title', null, [
+                                                'placeholder' => 'Category Name',
+                                                'class' => 'form-control',
+                                                'required' => 'required',
+                                            ]) !!}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group row">
+                                        <label class="control-label text-right col-md-4">Stage:</label>
+                                        <div class="col-md-8">
+                                            {!! Form::select('gca_stage_id', $steps, null, [
+                                                'class' => 'select2 form-control custom-select',
+                                                'placeholder' => 'Select Stage',
+                                                'required' => 'required',
+                                            ]) !!}
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--/span-->
+                            </div>
+                            @include('gcachecksheetcv.sections.paint')
+                            <div class="row">
+                                <div class="col-md-8 col-xs-7 payment-method last-item-row sub_c">
+                                    <div id="load_instruction" class="col-md-6 col-lg-12 mg-t-20 mg-lg-t-0-force"></div>
+                                    <button type="button" class="btn btn-success" aria-label="Left Align" id="add-item">
+                                        <i class="fa fa-plus-square"></i> Add Row
+                                    </button>
+                                </div>
+                                <div class="col-md-4 col-xs-5 invoice-block pull-right">
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="card-body">
+                                <div class="form-group mb-0 text-right">
+                                    {{ Form::submit('Save', ['class' => 'btn btn-info btn-md', 'id' => 'submit-data']) }}
+                                    {{ link_to_route('gcalcvchecksheet.index', 'Cancel', [], ['class' => 'btn btn-dark waves-effect waves-light']) }}
+                                </div>
+                            </div>
+                            {{ Form::close() }}
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endsection
+    @section('after-styles')
+        {{ Html::style('assets/libs/datepicker/datepicker.min.css') }}
+        {{ Html::style('assets/extra-libs/toastr/dist/build/toastr.min.css') }}
+        {{ Html::style('assets/libs/select2/dist/css/select2.min.css') }}
+        {{ Html::style('assets/libs/select2/dist/css/select2-bootstrap.css') }}
+        {{ Html::style('assets/libs/sweetalert2/dist/sweetalert2.min.css') }}
+        <style>
+            #added_product div:nth-child(even) .product {
+                background: #FFF
+            }
+
+            #added_product div:nth-child(odd) .product {
+                background: #eeeeee
+            }
+
+            #product_sub div:nth-child(odd) .v_product_t {
+                background: #FFF
+            }
+
+            #product_sub div:nth-child(even) .v_product_t {
+                background: #eeeeee
+            }
+
+            .hide {
+                display: none;
+            }
+        </style>
+    @endsection
+    @section('after-scripts')
+        {{ Html::script('assets/libs/datepicker/datepicker.min.js') }}
+        {{ Html::script('assets/extra-libs/toastr/dist/build/toastr.min.js') }}
+        {{ Html::script('assets/extra-libs/toastr/toastr-init.js') }}
+        {{ Html::script('assets/libs/select2/dist/js/select2.full.min.js') }}
+        {{ Html::script('assets/libs/select2/dist/js/select2.min.js') }}
+        {{ Html::script('assets/libs/sweetalert2/dist/sweetalert2.all.min.js') }}
+        <script type="text/javascript">
+            $(".select2").select2({
+                theme: "bootstrap",
+                width: 'auto',
+                dropdownAutoWidth: true,
+            });
+            $(document).on('submit', 'form#create-checksheet', function(e) {
+                e.preventDefault();
+                $("#submit-data").hide();
+                var data = $(this).serialize();
+                $.ajax({
+                    method: "post",
+                    url: $(this).attr("action"),
+                    dataType: "json",
+                    data: data,
+                    success: function(result) {
+                        if (result.success == true) {
+                            //$('div.account_model').modal('hide');
+                            toastr.success(result.msg);
+                            // capital_account_table.ajax.reload();
+                            //other_account_table.ajax.reload();
+                            location.href = '{{ route('gcacvchecksheet.create') }}';
+                        } else {
+                            $("#submit-data").show();
+                            toastr.error(result.msg);
+                        }
+                    }
+                });
+            });
+            $('[data-toggle="datepicker"]').datepicker({
+                autoHide: true,
+                format: 'dd-mm-yyyy',
+            });
+        </script>
+        @if (isset($data))
+            <script type="text/javascript">
+                $(document).on('click', ".add_more", function(e) {
+                    e.preventDefault();
+                    var product_details = $('#main_product').clone().find(".old_id input:hidden").val(0).end();
+                    product_details.find(".del_b").append(
+                        '<button class="btn btn-danger v_delete_temp m-1 align-content-end"><i class="fa fa-trash"></i> </button>'
+                    ).end();
+                    $('#added_product').append(product_details);
+                });
+                $(document).on('click', ".v_delete_temp", function(e) {
+                    e.preventDefault();
+                    $(this).closest('div .product').remove();
+                });
+                $(".defect_select").select2({
+                    theme: "bootstrap",
+                    tags: true,
+                    tokenSeparators: [',', ' '],
+                    width: 'auto',
+                    dropdownAutoWidth: true,
+                    allowClear: true,
+                });
+                // on clicking Add Title button
+                let rowIndx = 0;
+                $('#add-item').click(function() {
+                    rowIndx++;
+                    const i = rowIndx;
+                    $('#defectlist tr:last').after(defectItemRow(i));
+                    $(".defect_select").select2({
+                        theme: "bootstrap",
+                        width: 'auto',
+                        dropdownAutoWidth: true,
+                        placeholder: 'Select Category',
+                        ajax: {
+                            url: '{{ route('load-cv-category') }}',
+                            dataType: 'json',
+                            quietMillis: 10,
+                            processResults: function(data) {
+                                return {
+                                    results: $.map(data, function(item) {
+                                        return {
+                                            text: item.name,
+                                            id: item.id
+                                        }
+                                    })
+                                };
+                            },
+                        }
+                    });
+                });
+
+                function defectItemRow(n) {
+                    var querycategory = @json($data['query_category']);
+                    return `<tr>
+<td> <textarea class="form-control" rows="2" placeholder="Quality Item" name="quality_item[]" id="quality_item-${n}" required></textarea></td>
+<td><select name="gca_audit_report_category_id[]" id="gca_audit_report_category_id-${n}" class ="defect_select form-control custom-select" required></select></td>
+<td class=""> <input type="text" class="form-control " placeholder="position" name="position[]" id="position-${n}" required></td>
+<td><a href="javascript:void(0)" class="text-inverse" title="" data-toggle="tooltip" data-original-title="Delete"><i class="ti-trash remove_item_row"></i></a></td>
+</tr>
+`;
+                }
+                $(document).on("click", ".remove_item_row", function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        type: 'warning',
+                        title: "You Want To Remove This  Item  From List?",
+                        showCancelButton: true,
+                        buttons: true,
+                        dangerMode: true,
+                    }).then((willDelete) => {
+                        if (willDelete.value) {
+                            $(this).closest("tr").remove();
+                        } else {
+                            Swal.fire('Item Not Removed!!', '', 'info')
+                        }
+                    });
+                });
+            </script>
+        @endif
+    @endsection
