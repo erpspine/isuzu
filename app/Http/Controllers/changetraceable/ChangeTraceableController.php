@@ -19,13 +19,9 @@ class ChangeTraceableController extends Controller
     {
         try {
             $vin_no = vehicle_units::distinct('vin_no')->pluck('vin_no', 'id');
-            $data=[];
+            $data = [];
             return view('changetraceable.index')->with(compact('vin_no'));
-
-
-          
         } catch (\Exception $e) {
-            dd($e->getMessage());
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
@@ -95,8 +91,8 @@ class ChangeTraceableController extends Controller
     {
         //
     }
-  
-    
+
+
     public function loadbyjob(Request $request)
     {
         $q = $request->lot_no;
@@ -107,41 +103,28 @@ class ChangeTraceableController extends Controller
     {
 
         try {
-        $vehicle_id=$request->vin_no;
-    
-        $queries=Queryanswer::with('vehicle')->where('vehicle_id',$vehicle_id)->where( function ( $query ){
-            $query->whereHas('queries', function ($subquery ) {
-                $subquery ->where('quiz_type','traceable');
-            })->orWhereHas('querycategory', function ($subquery ) {
-                $subquery ->where('quiz_type','traceable');
-            });
-            
-        })->get();
+            $vehicle_id = $request->vin_no;
+
+            $queries = Queryanswer::with('vehicle')->where('vehicle_id', $vehicle_id)->where(function ($query) {
+                $query->whereHas('queries', function ($subquery) {
+                    $subquery->where('quiz_type', 'traceable');
+                })->orWhereHas('querycategory', function ($subquery) {
+                    $subquery->where('quiz_type', 'traceable');
+                });
+            })->get();
             $vin_no = vehicle_units::distinct('vin_no')->pluck('vin_no', 'id');
-            return view('changetraceable.index')->with(compact('vin_no','queries','vehicle_id'));
-
-    } catch (\Exception $e) {
-        dd($e->getMessage());
-        return redirect()->back()->with('error', $e->getMessage());
-    }
-
-        
-
-    
+            return view('changetraceable.index')->with(compact('vin_no', 'queries', 'vehicle_id'));
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
     }
 
     public function updatetraceable(Request $request)
     {
-      
-      if($request->ajax()){
-        Queryanswer::find($request->input('pk'))->update([$request->input('name') => $request->input('value')]);
-          return response()->json(['success' => true,'data'=>$request->input('name')]);
-      }
 
-    
-
-
-
+        if ($request->ajax()) {
+            Queryanswer::find($request->input('pk'))->update([$request->input('name') => $request->input('value')]);
+            return response()->json(['success' => true, 'data' => $request->input('name')]);
+        }
     }
-    
 }

@@ -1,5 +1,7 @@
 <?php
+
 use App\Http\Controllers\appearancezones\AppearanceZonesController;
+use App\Http\Controllers\treacable\TraceableController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\scheduling\SchedulingController;
 use App\Http\Controllers\appusers\AppUsersController;
@@ -103,11 +105,11 @@ Route::get('/', function () {
 
 Route::get('clear-cache', function () {
     Artisan::call('cache:clear');
-            Artisan::call('config:clear');
-            Artisan::call('view:clear');
+    Artisan::call('config:clear');
+    Artisan::call('view:clear');
 });
 
-Route::get('dashboard', [DashboardController::class,'dashboard'])->name('dashboard');
+Route::get('dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
 Route::get('forget-password', [SystemUsersController::class, 'showForgetPasswordForm'])->name('forget.password.get');
 Route::post('forget-password', [SystemUsersController::class, 'submitForgetPasswordForm'])->name('forget.password.post');
 Route::get('reset-password/{token}', [SystemUsersController::class, 'showResetPasswordForm'])->name('reset.password.get');
@@ -116,437 +118,429 @@ Auth::routes();
 Route::middleware(['auth'])->group(function () {
 
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
- Route::resource('appusers', AppUsersController::class);
- Route::get('resetpassword/{id}', [AppUsersController::class,'resetpassword'])->name('resetpassword');
- Route::resource('scheduling', SchedulingController::class);
- Route::resource('attendance', AttendanceController::class);
- Route::resource('employee', EmployeeController::class);
- Route::resource('imports', ImportsController::class);
- Route::resource('qrcode', QrcodeController::class);
- Route::post('filterqrcode', [QrcodeController::class,'filterqrcode'])->name('filterqrcode');
- Route::get('qrcodefilterresult/{lot}/{job}/{model}', [QrcodeController::class,'qrcodefilterresult'])->name('qrcodefilterresult');
- 
- Route::resource('routingquery', RoutingQueryController::class);
+    Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+    Route::resource('appusers', AppUsersController::class);
+    Route::get('resetpassword/{id}', [AppUsersController::class, 'resetpassword'])->name('resetpassword');
+    Route::resource('scheduling', SchedulingController::class);
+    Route::resource('attendance', AttendanceController::class);
+    Route::resource('employee', EmployeeController::class);
+    Route::resource('imports', ImportsController::class);
+    Route::resource('qrcode', QrcodeController::class);
+    Route::post('filterqrcode', [QrcodeController::class, 'filterqrcode'])->name('filterqrcode');
+    Route::get('qrcodefilterresult/{lot}/{job}/{model}', [QrcodeController::class, 'qrcodefilterresult'])->name('qrcodefilterresult');
 
- //Route::post('load_options', [RoutingQueryController::class, 'load_query']);
+    Route::resource('routingquery', RoutingQueryController::class);
 
- Route::post('load_options', [RoutingQueryController::class,'load_options'])->name('load_options');
- Route::post('load_quiz_options', [RoutingQueryController::class,'load_quiz_options'])->name('load_quiz_options');
- Route::post('load_total_answer', [RoutingQueryController::class,'load_total_answer'])->name('load_total_answer');
+    //Route::post('load_options', [RoutingQueryController::class, 'load_query']);
 
-
+    Route::post('load_options', [RoutingQueryController::class, 'load_options'])->name('load_options');
+    Route::post('load_quiz_options', [RoutingQueryController::class, 'load_quiz_options'])->name('load_quiz_options');
+    Route::post('load_total_answer', [RoutingQueryController::class, 'load_total_answer'])->name('load_total_answer');
 
 
-Route::resource('shops', ShopController::class);
-
- Route::resource('stdworkinghrs', StdWorkingHrController::class);
-
- Route::resource('vehicleunits', VehicleUnitsController::class);
- Route::get('get_units', [VehicleUnitsController::class,'get_units'])->name('get_units');
- Route::get('add_unit_row', [VehicleUnitsController::class,'add_unit_row'])->name('add_unit_row');
- Route::get('samples/{name}', [VehicleUnitsController::class,'samples'])->name('samples');
- Route::post('import_process', [VehicleUnitsController::class,'import_process'])->name('import_process');
- Route::get('vehicle_unit', [VehicleUnitsController::class,'vehicle_unit'])->name('vehicle_unit');
- Route::get('updateschedule/{id}', [VehicleUnitsController::class,'updateschedule'])->name('updateschedule');
- 
- 
- Route::resource('vehiclemodels', UnitModelController::class);
- Route::resource('unitmapping', UnitMappingController::class);
- Route::resource('unitroute', RoutesController::class);
- Route::resource('workschedule', WorkScheduleController::class);
-
- Route::resource('querycategory', QuerycategoryController::class);
- Route::get('addrouting/{name}', [QuerycategoryController::class,'addrouting'])->name('addrouting');
- Route::post('additionalquery', [QuerycategoryController::class,'additionalquery'])->name('additionalquery');
- Route::get('querylisting/{id}', [QuerycategoryController::class,'querylisting'])->name('querylisting');
- Route::post('loadlisting', [QuerycategoryController::class,'loadlisting'])->name('loadlisting');
- Route::get('changeanswer/{id}', [QuerycategoryController::class,'changeanswer'])->name('changeanswer');
- Route::get('editrouting/{id}', [QuerycategoryController::class,'editrouting'])->name('editrouting');
-  Route::get('viewanswer/{id}', [QuerycategoryController::class,'viewanswer'])->name('viewanswer');
-  Route::get('addquery/{id}', [QuerycategoryController::class,'addquery'])->name('addquery');
-  Route::post('querysave', [QuerycategoryController::class,'querysave'])->name('querysave');
-  Route::get('querybymodel', [QuerycategoryController::class,'querybymodel'])->name('querybymodel');
-  Route::get('viewquerybymodel/{id}', [QuerycategoryController::class,'viewquerybymodel'])->name('viewquerybymodel');
-  Route::get('quality_control_dashboard', [HomeController::class,'quality_control_dashboard'])->name('quality_control_dashboard');
-  
-  
-  
-
-  
-
-  Route::post('saveanswer', [QuerycategoryController::class,'saveanswer'])->name('saveanswer');
-  Route::post('updatequeryoption', [QuerycategoryController::class,'updatequeryoption'])->name('updatequeryoption');
- 
 
 
- Route::delete('deletequeryoption/{id}', [QuerycategoryController::class,'deletequeryoption'])->name('deletequeryoption');
-  Route::get('sortroutingquery', [QuerycategoryController::class, 'sortroutingquery'])->name('sortroutingquery');
+    Route::resource('shops', ShopController::class);
+
+    Route::resource('stdworkinghrs', StdWorkingHrController::class);
+
+    Route::resource('vehicleunits', VehicleUnitsController::class);
+    Route::get('get_units', [VehicleUnitsController::class, 'get_units'])->name('get_units');
+    Route::get('add_unit_row', [VehicleUnitsController::class, 'add_unit_row'])->name('add_unit_row');
+    Route::get('samples/{name}', [VehicleUnitsController::class, 'samples'])->name('samples');
+    Route::post('import_process', [VehicleUnitsController::class, 'import_process'])->name('import_process');
+    Route::get('vehicle_unit', [VehicleUnitsController::class, 'vehicle_unit'])->name('vehicle_unit');
+    Route::get('updateschedule/{id}', [VehicleUnitsController::class, 'updateschedule'])->name('updateschedule');
+
+
+    Route::resource('vehiclemodels', UnitModelController::class);
+    Route::resource('unitmapping', UnitMappingController::class);
+    Route::resource('unitroute', RoutesController::class);
+    Route::resource('workschedule', WorkScheduleController::class);
+
+    Route::resource('querycategory', QuerycategoryController::class);
+    Route::get('addrouting/{name}', [QuerycategoryController::class, 'addrouting'])->name('addrouting');
+    Route::post('additionalquery', [QuerycategoryController::class, 'additionalquery'])->name('additionalquery');
+    Route::get('querylisting/{id}', [QuerycategoryController::class, 'querylisting'])->name('querylisting');
+    Route::post('loadlisting', [QuerycategoryController::class, 'loadlisting'])->name('loadlisting');
+    Route::get('changeanswer/{id}', [QuerycategoryController::class, 'changeanswer'])->name('changeanswer');
+    Route::get('editrouting/{id}', [QuerycategoryController::class, 'editrouting'])->name('editrouting');
+    Route::get('viewanswer/{id}', [QuerycategoryController::class, 'viewanswer'])->name('viewanswer');
+    Route::get('addquery/{id}', [QuerycategoryController::class, 'addquery'])->name('addquery');
+    Route::post('querysave', [QuerycategoryController::class, 'querysave'])->name('querysave');
+    Route::get('querybymodel', [QuerycategoryController::class, 'querybymodel'])->name('querybymodel');
+    Route::get('viewquerybymodel/{id}', [QuerycategoryController::class, 'viewquerybymodel'])->name('viewquerybymodel');
+    Route::get('quality_control_dashboard', [HomeController::class, 'quality_control_dashboard'])->name('quality_control_dashboard');
+
+
+
+
+
+
+    Route::post('saveanswer', [QuerycategoryController::class, 'saveanswer'])->name('saveanswer');
+    Route::post('updatequeryoption', [QuerycategoryController::class, 'updatequeryoption'])->name('updatequeryoption');
+
+
+
+    Route::delete('deletequeryoption/{id}', [QuerycategoryController::class, 'deletequeryoption'])->name('deletequeryoption');
+    Route::get('sortroutingquery', [QuerycategoryController::class, 'sortroutingquery'])->name('sortroutingquery');
     Route::post('reorder', [QuerycategoryController::class, 'reorder'])->name('reorder');
-  Route::post('categoryreorder', [QuerycategoryController::class, 'categoryreorder'])->name('categoryreorder');
+    Route::post('categoryreorder', [QuerycategoryController::class, 'categoryreorder'])->name('categoryreorder');
 
- 
 
- Route::resource('roles', RoleController::class);
 
- Route::resource('teamleader', TeamleaderController::class);
+    Route::resource('roles', RoleController::class);
 
- Route::resource('vehicletype', VehicleTypeController::class);
- Route::get('currentunitstage', [CurrentStageController::class,'currentunitstage'])->name('currentunitstage');
- Route::get('moveunit/{id}', [CurrentStageController::class,'moveunit'])->name('moveunit');
- Route::post('saveunitmovement', [CurrentStageController::class,'saveunitmovement'])->name('saveunitmovement');
- Route::get('markedunit', [CheckSheetController::class,'markedunit'])->name('markedunit');
- Route::get('checkmarkedsheet/{vid}', [CheckSheetController::class,'checkmarkedsheet'])->name('checkmarkedsheet');
- Route::get('checkdefects/{id}/{vid}/{shop_id}', [CheckSheetController::class,'checkdefects'])->name('checkdefects');
- Route::get('drl/{section}/{period}/{date}', [ProductionReportController::class,'drl'])->name('drl');
- Route::post('filtertoday', [ProductionReportController::class,'filtertoday'])->name('filtertoday');
- Route::post('filterdailydrl', [ProductionReportController::class,'filterdailydrl'])->name('filterdailydrl');
- Route::resource('drltarget', DrlTargetController::class);
- Route::resource('drrtarget', DrrTargetController::class);
-  Route::get('exportdrr/{section}/{from}/{to}/{target_id}', [ProductionReportController::class,'exportdrr'])->name('exportdrr');
-  Route::get('exportdrl/{section}/{from}/{to}/{target_id}', [ProductionReportController::class,'exportdrl'])->name('exportdrl');
-  Route::get('drr/{section}/{period}/{date}', [ProductionReportController::class,'drr'])->name('drr');
-   Route::post('filterdailydrr', [ProductionReportController::class,'filterdailydrr'])->name('filterdailydrr');
-   Route::get('changedefect/{id}', [CheckSheetController::class,'changedefect'])->name('changedefect');
-   Route::get('defectsummary', [ProductionReportController::class,'defectsummary'])->name('defectsummary');
-  Route::get('drrlist', [ProductionReportController::class,'drrlist'])->name('drrlist');
- 
-   Route::post('updatedefect/{id}', [ProductionReportController::class,'updatedefect'])->name('updatedefect');
-   Route::post('filterdefect', [ProductionReportController::class,'filterdefect'])->name('filterdefect');
+    Route::resource('teamleader', TeamleaderController::class);
 
-   Route::resource('floatsetting', FloatSettingController::class);
- Route::resource('drrdata', DrrController::class);
- 
-  Route::post('filterdrrdefect', [ProductionReportController::class,'filterdrrdefect'])->name('filterdrrdefect');
-   
- Route::resource('unitscheduled', ScheduledBatchController::class);
- Route::get('update_batch/{id}', [ScheduledBatchController::class,'update_batch'])->name('update_batch');
-   Route::resource('swapunit', SwapUnitController::class);
-  Route::post('swapunit', [SwapUnitController::class,'swapunit'])->name('swapunit');
+    Route::resource('vehicletype', VehicleTypeController::class);
+    Route::get('currentunitstage', [CurrentStageController::class, 'currentunitstage'])->name('currentunitstage');
+    Route::get('moveunit/{id}', [CurrentStageController::class, 'moveunit'])->name('moveunit');
+    Route::post('saveunitmovement', [CurrentStageController::class, 'saveunitmovement'])->name('saveunitmovement');
+    Route::get('markedunit', [CheckSheetController::class, 'markedunit'])->name('markedunit');
+    Route::get('checkmarkedsheet/{vid}', [CheckSheetController::class, 'checkmarkedsheet'])->name('checkmarkedsheet');
+    Route::get('checkdefects/{id}/{vid}/{shop_id}', [CheckSheetController::class, 'checkdefects'])->name('checkdefects');
+    Route::get('drl/{section}/{period}/{date}', [ProductionReportController::class, 'drl'])->name('drl');
+    Route::post('filtertoday', [ProductionReportController::class, 'filtertoday'])->name('filtertoday');
+    Route::post('filterdailydrl', [ProductionReportController::class, 'filterdailydrl'])->name('filterdailydrl');
+    Route::resource('drltarget', DrlTargetController::class);
+    Route::resource('drrtarget', DrrTargetController::class);
+    Route::get('exportdrr/{section}/{from}/{to}/{target_id}', [ProductionReportController::class, 'exportdrr'])->name('exportdrr');
+    Route::get('exportdrl/{section}/{from}/{to}/{target_id}', [ProductionReportController::class, 'exportdrl'])->name('exportdrl');
+    Route::get('drr/{section}/{period}/{date}', [ProductionReportController::class, 'drr'])->name('drr');
+    Route::post('filterdailydrr', [ProductionReportController::class, 'filterdailydrr'])->name('filterdailydrr');
+    Route::get('changedefect/{id}', [CheckSheetController::class, 'changedefect'])->name('changedefect');
+    Route::get('defectsummary', [ProductionReportController::class, 'defectsummary'])->name('defectsummary');
+    Route::get('drrlist', [ProductionReportController::class, 'drrlist'])->name('drrlist');
 
-  Route::post('swapunit/seach', [SwapUnitController::class,'search_swap_unit'])->name('search_swap_unit');
+    Route::post('updatedefect/{id}', [ProductionReportController::class, 'updatedefect'])->name('updatedefect');
+    Route::post('filterdefect', [ProductionReportController::class, 'filterdefect'])->name('filterdefect');
+
+    Route::resource('floatsetting', FloatSettingController::class);
+    Route::resource('drrdata', DrrController::class);
+
+    Route::post('filterdrrdefect', [ProductionReportController::class, 'filterdrrdefect'])->name('filterdrrdefect');
+
+    Route::resource('unitscheduled', ScheduledBatchController::class);
+    Route::get('update_batch/{id}', [ScheduledBatchController::class, 'update_batch'])->name('update_batch');
+    Route::resource('swapunit', SwapUnitController::class);
+    Route::post('swapunit', [SwapUnitController::class, 'swapunit'])->name('swapunit');
+
+    Route::post('swapunit/seach', [SwapUnitController::class, 'search_swap_unit'])->name('search_swap_unit');
     Route::resource('rerouting', ReroutingController::class);
-  Route::post('filtererouting', [ReroutingController::class, 'filtererouting'])->name('filtererouting');
-  Route::get('completererouting/{id}', [ReroutingController::class, 'completererouting'])->name('completererouting');
-  Route::post('saverouting', [ReroutingController::class, 'saverouting'])->name('saverouting');
-    Route::post('updatedrr/{id}', [ProductionReportController::class,'updatedrr'])->name('updatedrr');
-	Route::get('searchunitprofile', [UnitProfileController::class,'searchunitprofile'])->name('searchunitprofile');
-    Route::get('printprofile/{id}/{token}', [UnitProfileController::class,'printprofile'])->name('printprofile');
-	 Route::get('changedefect/{id}', [ProductionReportController::class,'changedefect'])->name('changedefect');
-    Route::post('savechangedefect', [ProductionReportController::class,'savechangedefect'])->name('savechangedefect');
-	Route::resource('changetraceble', ChangeTraceableController::class);
-    Route::post('loadbyjob', [ChangeTraceableController::class,'loadbyjob'])->name('loadbyjob');
-    Route::get('filterjob', [ChangeTraceableController::class,'filter_job'])->name('filterjob');
-    Route::post('updatetraceable', [ChangeTraceableController::class,'updatetraceable'])->name('updatetraceable');
+    Route::post('filtererouting', [ReroutingController::class, 'filtererouting'])->name('filtererouting');
+    Route::get('completererouting/{id}', [ReroutingController::class, 'completererouting'])->name('completererouting');
+    Route::post('saverouting', [ReroutingController::class, 'saverouting'])->name('saverouting');
+    Route::post('updatedrr/{id}', [ProductionReportController::class, 'updatedrr'])->name('updatedrr');
+    Route::get('searchunitprofile', [UnitProfileController::class, 'searchunitprofile'])->name('searchunitprofile');
+    Route::get('printprofile/{id}/{token}', [UnitProfileController::class, 'printprofile'])->name('printprofile');
+    Route::get('changedefect/{id}', [ProductionReportController::class, 'changedefect'])->name('changedefect');
+    Route::post('savechangedefect', [ProductionReportController::class, 'savechangedefect'])->name('savechangedefect');
+    Route::resource('changetraceble', ChangeTraceableController::class);
+    Route::post('loadbyjob', [ChangeTraceableController::class, 'loadbyjob'])->name('loadbyjob');
+    Route::get('filterjob', [ChangeTraceableController::class, 'filter_job'])->name('filterjob');
+    Route::post('updatetraceable', [ChangeTraceableController::class, 'updatetraceable'])->name('updatetraceable');
     Route::resource('fcaboard', FcaBoardController::class);
-    Route::get('filterfcaboard', [FcaBoardController::class,'index'])->name('filterfcaboard');
-	Route::resource('gcafollowup', GcaFollowUpController::class);
-    Route::get('closegca/{id}', [GcaFollowUpController::class,'closegca'])->name('closegca');
-	
-    Route::get('loadpeopledashboard', [HomeController::class,'loadpeople_dashboard'])->name('loadpeopledashboard');
-    Route::get('loadqualitydashboard', [HomeController::class,'loadquality_dashboard'])->name('loadqualitydashboard');
-    Route::get('loadresponsivenessdashboard', [HomeController::class,'loadresponsiveness_dashboard'])->name('loadresponsivenessdashboard');
-    Route::get('loadattendancedashboard', [HomeController::class,'loadattendance_dashboard'])->name('loadattendancedashboard');
-	  Route::resource('tcm', TcmController::class);
+    Route::get('filterfcaboard', [FcaBoardController::class, 'index'])->name('filterfcaboard');
+    Route::resource('gcafollowup', GcaFollowUpController::class);
+    Route::get('closegca/{id}', [GcaFollowUpController::class, 'closegca'])->name('closegca');
+
+    Route::get('loadpeopledashboard', [HomeController::class, 'loadpeople_dashboard'])->name('loadpeopledashboard');
+    Route::get('loadqualitydashboard', [HomeController::class, 'loadquality_dashboard'])->name('loadqualitydashboard');
+    Route::get('loadresponsivenessdashboard', [HomeController::class, 'loadresponsiveness_dashboard'])->name('loadresponsivenessdashboard');
+    Route::get('loadattendancedashboard', [HomeController::class, 'loadattendance_dashboard'])->name('loadattendancedashboard');
+    Route::resource('tcm', TcmController::class);
     Route::resource('tcmjoint', TcmJointController::class);
-	Route::get('loadshops', [ShopController::class,'loadshops'])->name('loadshops');
-    Route::post('searchemployee', [EmployeeController::class,'search_employee'])->name('searchemployee');
-    Route::post('addemployeemodal', [EmployeeController::class,'addemployeemodal'])->name('addemployeemodal');
-	Route::get('overtimebyshop', [OvertimeController::class, 'overtimebyshop'])->name('overtimebyshop');
+    Route::get('loadshops', [ShopController::class, 'loadshops'])->name('loadshops');
+    Route::post('searchemployee', [EmployeeController::class, 'search_employee'])->name('searchemployee');
+    Route::post('addemployeemodal', [EmployeeController::class, 'addemployeemodal'])->name('addemployeemodal');
+    Route::get('overtimebyshop', [OvertimeController::class, 'overtimebyshop'])->name('overtimebyshop');
     Route::get('printovertime/{shop_id}/{daterange}/{approval}/{department}', [OvertimeController::class, 'printovertime'])->name('printovertime');
     Route::resource('division', DivisionController::class);
-    Route::get('exporttoexcel/{department_id}/{daterange}', [OvertimeController::class,'exporttoexcel'])->name('exporttoexcel');
-	Route::resource('qcossheet', QcosSheetController::class);
-	Route::get('generateqcosreport', [QcosSheetController::class,'generateqcosreport'])->name('generateqcosreport');
-    Route::resource('qcosemail',QcosEmailController::class);
-	 Route::post('selectuser', [QcosEmailController::class,'select_user'])->name('selectuser');
-    Route::post('searchuserdetails', [QcosEmailController::class,'search_user_details'])->name('searchuserdetails');
-    Route::resource('qcoscalibration',QcosCalibration::class);
-	Route::post('loadbyjoint', [QcosSheetController::class,'loadbyjoint'])->name('loadbyjoint');
-    Route::resource('monitoringsheet',MonitoringSheetController::class);
-	Route::get('importtool', [TcmController::class,'import_tool'])->name('importtool');
-    Route::post('savetoolimport', [TcmController::class,'savetoolimport'])->name('savetoolimport');
-    Route::get('importjoint', [TcmJointController::class,'import_joint'])->name('importjoint');
-    Route::post('savetooljointimport', [TcmJointController::class,'savetooljoint_import'])->name('savetooljointimport');
-	 Route::resource('ttmsactionplan',QcosActionPlanController::class);
-	Route::resource('scheduler',QcosscheduleController::class);
-    Route::get('schedulereport', [QcosscheduleController::class,'schedule_report'])->name('schedulereport');
-	Route::resource('calibrarioncert',CalibrationCertController::class);
+    Route::get('exporttoexcel/{department_id}/{daterange}', [OvertimeController::class, 'exporttoexcel'])->name('exporttoexcel');
+    Route::resource('qcossheet', QcosSheetController::class);
+    Route::get('generateqcosreport', [QcosSheetController::class, 'generateqcosreport'])->name('generateqcosreport');
+    Route::resource('qcosemail', QcosEmailController::class);
+    Route::post('selectuser', [QcosEmailController::class, 'select_user'])->name('selectuser');
+    Route::post('searchuserdetails', [QcosEmailController::class, 'search_user_details'])->name('searchuserdetails');
+    Route::resource('qcoscalibration', QcosCalibration::class);
+    Route::post('loadbyjoint', [QcosSheetController::class, 'loadbyjoint'])->name('loadbyjoint');
+    Route::resource('monitoringsheet', MonitoringSheetController::class);
+    Route::get('importtool', [TcmController::class, 'import_tool'])->name('importtool');
+    Route::post('savetoolimport', [TcmController::class, 'savetoolimport'])->name('savetoolimport');
+    Route::get('importjoint', [TcmJointController::class, 'import_joint'])->name('importjoint');
+    Route::post('savetooljointimport', [TcmJointController::class, 'savetooljoint_import'])->name('savetooljointimport');
+    Route::resource('ttmsactionplan', QcosActionPlanController::class);
+    Route::resource('scheduler', QcosscheduleController::class);
+    Route::get('schedulereport', [QcosscheduleController::class, 'schedule_report'])->name('schedulereport');
+    Route::resource('calibrarioncert', CalibrationCertController::class);
     //Gca
-	 Route::resource('decrepancy_weight',DiscrepancyWeightController::class);
-    Route::resource('gca-audit-report-category',GcaAuditReportCategoryController::class);
-    Route::resource('appearance-zones',AppearanceZonesController::class);
-    Route::get('appearance-zones-cv', [AppearanceZonesController::class,'appearance_zones_cv'])->name('appearance-zones-cv');
-    Route::get('add-instructions-cv', [AppearanceZonesController::class,'add_instructions_cv'])->name('add-instructions-cv');
-    Route::get('add-instructions-lcv', [AppearanceZonesController::class,'add_instructions_lcv'])->name('add-instructions-lcv');
-    Route::get('appearance-zones-cv-add', [AppearanceZonesController::class,'appearance_zones_cv_add'])->name('appearance-zones-cv-add');
-    Route::get('appearance-zones-lcv-add', [AppearanceZonesController::class,'appearance_zones_lcv_add'])->name('appearance-zones-lcv-add');
-    Route::get('edit-instructions-cv/{id}', [AppearanceZonesController::class,'edit_instructions_cv'])->name('edit-instructions-cv');
-    Route::resource('gcacvchecksheet',GcaCvChecksheetController::class);
-    Route::resource('gcalcvchecksheet',GcaLcvCheckSheetController::class);
-    Route::resource('gcasteps',GcaStepController::class);
-    Route::get('load-cv-category', [GcaCvChecksheetController::class,'load_cv_category'])->name('load-cv-category');
-    Route::resource('gcacvchecksheetitem',GcaCvChecksheetItemController::class);
-    Route::resource('gcalcvchecksheetitem',GcaLcvChecksheetItemController::class);
-    Route::post('load-gca-stage', [GcaCvChecksheetItemController::class,'load_gca_stage'])->name('load-gca-stage');
-    Route::post('load-gca-query-category', [GcaCvChecksheetItemController::class,'load_gca_query_category'])->name('load-gca-query-category');
-    Route::post('load-gcalcv-query-category', [GcaLcvChecksheetItemController::class,'load_gca_lcv_query_category'])->name('load-gcalcv-query-category');
+    Route::resource('decrepancy_weight', DiscrepancyWeightController::class);
+    Route::resource('gca-audit-report-category', GcaAuditReportCategoryController::class);
+    Route::resource('appearance-zones', AppearanceZonesController::class);
+    Route::get('appearance-zones-cv', [AppearanceZonesController::class, 'appearance_zones_cv'])->name('appearance-zones-cv');
+    Route::get('add-instructions-cv', [AppearanceZonesController::class, 'add_instructions_cv'])->name('add-instructions-cv');
+    Route::get('add-instructions-lcv', [AppearanceZonesController::class, 'add_instructions_lcv'])->name('add-instructions-lcv');
+    Route::get('appearance-zones-cv-add', [AppearanceZonesController::class, 'appearance_zones_cv_add'])->name('appearance-zones-cv-add');
+    Route::get('appearance-zones-lcv-add', [AppearanceZonesController::class, 'appearance_zones_lcv_add'])->name('appearance-zones-lcv-add');
+    Route::get('edit-instructions-cv/{id}', [AppearanceZonesController::class, 'edit_instructions_cv'])->name('edit-instructions-cv');
+    Route::resource('gcacvchecksheet', GcaCvChecksheetController::class);
+    Route::resource('gcalcvchecksheet', GcaLcvCheckSheetController::class);
+    Route::resource('gcasteps', GcaStepController::class);
+    Route::get('load-cv-category', [GcaCvChecksheetController::class, 'load_cv_category'])->name('load-cv-category');
+    Route::resource('gcacvchecksheetitem', GcaCvChecksheetItemController::class);
+    Route::resource('gcalcvchecksheetitem', GcaLcvChecksheetItemController::class);
+    Route::post('load-gca-stage', [GcaCvChecksheetItemController::class, 'load_gca_stage'])->name('load-gca-stage');
+    Route::post('load-gca-query-category', [GcaCvChecksheetItemController::class, 'load_gca_query_category'])->name('load-gca-query-category');
+    Route::post('load-gcalcv-query-category', [GcaLcvChecksheetItemController::class, 'load_gca_lcv_query_category'])->name('load-gcalcv-query-category');
 
-    Route::resource('cvinstruction',CvStaticController::class);
-    Route::resource('instructions',CvNotesController::class);
-    Route::resource('lcvinstructions',LCVInstractionController::class);
-	
-   Route::resource('gcadefects-action',GcaDefectActionController::class);
-    Route::post('savegraphimage', [GcaReportsController::class,'save_graph_image'])->name('savegraphimage');
-	
-	
+    Route::resource('cvinstruction', CvStaticController::class);
+    Route::resource('instructions', CvNotesController::class);
+    Route::resource('lcvinstructions', LCVInstractionController::class);
 
-    Route::get('gcadefects', [GcaReportsController::class,'gcadefects'])->name('gcadefects');
-    Route::get('gcadpvwdpv', [GcaReportsController::class,'gcadpvwdpv'])->name('gcadpvwdpv');
-     Route::get('printgca/{period}/{section}/{date}/{dpv_target}/{wdpv_target}', [GcaReportsController::class,'print_gca'])->name('printgca');
-	 //Material Distribution
- Route::resource('material-distribution',MaterialDistributionController::class);
- Route::resource('material-distribution-model',MaterialDistributionModelController::class);
-	
-	
-    
+    Route::resource('gcadefects-action', GcaDefectActionController::class);
+    Route::post('savegraphimage', [GcaReportsController::class, 'save_graph_image'])->name('savegraphimage');
 
-    
 
 
+    Route::get('gcadefects', [GcaReportsController::class, 'gcadefects'])->name('gcadefects');
+    Route::get('gcadpvwdpv', [GcaReportsController::class, 'gcadpvwdpv'])->name('gcadpvwdpv');
+    Route::get('printgca/{period}/{section}/{date}/{dpv_target}/{wdpv_target}', [GcaReportsController::class, 'print_gca'])->name('printgca');
+    //Material Distribution
+    Route::resource('material-distribution', MaterialDistributionController::class);
+    Route::resource('material-distribution-model', MaterialDistributionModelController::class);
+    Route::resource('treceable', TraceableController::class);
 
 
 
 
-  
- //People
- Route::resource('systemusers', SystemUsersController::class);
 
- Route::resource('attendance', AttendanceController::class);
 
- Route::resource('employee', EmployeeController::class);
 
- Route::resource('stdworkinghrs', StdWorkingHrController::class);
 
- Route::resource('employeecategory', EmployeeCategoryController::class);
 
- Route::resource('stafftitle', StaffTitleController::class);
 
- Route::resource('department', DepartmentController::class);
 
- Route::resource('division', DivisionController::class);
- 
-  Route::resource('gcascore', GcaScoreController::class);
-  
- Route::resource('outsource', OutsourceController::class);
-  
-  Route::resource('reviewconversation', ReviewConversationController::class);
+    //People
+    Route::resource('systemusers', SystemUsersController::class);
 
- Route::resource('attendancepreview', AttendancePreviewController::class);
+    Route::resource('attendance', AttendanceController::class);
 
- Route::get('attendance_view', [AttendanceController::class, 'attendance_view'])->name('attendance_view');
+    Route::resource('employee', EmployeeController::class);
 
- Route::get('confirmattendance', [AttendancePreviewController::class, 'confirmattendance']);
+    Route::resource('stdworkinghrs', StdWorkingHrController::class);
 
- Route::get('headcount', [AttendanceController::class, 'headcount']);
+    Route::resource('employeecategory', EmployeeCategoryController::class);
 
- Route::get('prodnoutput', [AttendanceController::class, 'prodnoutput']);
+    Route::resource('stafftitle', StaffTitleController::class);
 
- Route::get('attendancereport', [AttendanceController::class, 'attendancereport']);
+    Route::resource('department', DepartmentController::class);
 
- Route::get('attendancesummary', [AttendanceController::class, 'attendacesummary']);
+    Route::resource('division', DivisionController::class);
 
- Route::get('searchsummaryreport', [AttendanceController::class, 'searchsummaryreport']);
+    Route::resource('gcascore', GcaScoreController::class);
 
- Route::get('staffsummary', [EmployeeController::class, 'staffsummary']);
+    Route::resource('outsource', OutsourceController::class);
 
- Route::get('plantefficiency', [GraphController::class, 'plantefficiency'])->name('plantefficiency');
+    Route::resource('reviewconversation', ReviewConversationController::class);
 
-Route::get('markattencance', [AttendanceController::class, 'markattencance'])->name('markattencance');
+    Route::resource('attendancepreview', AttendancePreviewController::class);
 
-Route::get('checkattendance/{id}', [AttendancePreviewController::class, 'checkattendance'])->name('checkattendance');
+    Route::get('attendance_view', [AttendanceController::class, 'attendance_view'])->name('attendance_view');
 
-Route::get('checkattendance1', [AttendancePreviewController::class, 'checkattendance1'])->name('checkattendance1');
+    Route::get('confirmattendance', [AttendancePreviewController::class, 'confirmattendance']);
 
-Route::get('resetpasswordsu/{id}', [SystemUsersController::class,'resetpasswordsu'])->name('resetpasswordsu');
+    Route::get('headcount', [AttendanceController::class, 'headcount']);
 
-Route::get('deleteUser/{id}', [SystemUsersController::class,'deleteUser'])->name('deleteUser');
-Route::get('importemployee', [EmployeeController::class,'importemployee'])->name('importemployee');
+    Route::get('prodnoutput', [AttendanceController::class, 'prodnoutput']);
 
-Route::get('import_Employees', [EmployeeController::class,'import_Employees'])->name('import_Employees');
+    Route::get('attendancereport', [AttendanceController::class, 'attendancereport']);
 
-Route::post('import', [EmployeeController::class, 'import'])->name('import');
+    Route::get('attendancesummary', [AttendanceController::class, 'attendacesummary']);
 
-Route::get('sethours', [EmployeeController::class, 'sethours'])->name('sethours');
+    Route::get('searchsummaryreport', [AttendanceController::class, 'searchsummaryreport']);
 
-Route::post('setdefaulthrs', [EmployeeController::class, 'setdefaulthrs'])->name('setdefaulthrs');
+    Route::get('staffsummary', [EmployeeController::class, 'staffsummary']);
 
-Route::get('weeklystdhrs', [AttendanceController::class, 'weeklystdhrs'])->name('weeklystdhrs');
+    Route::get('plantefficiency', [GraphController::class, 'plantefficiency'])->name('plantefficiency');
 
-Route::get('weeklyactualhrs', [AttendanceController::class, 'weeklyactualhrs'])->name('weeklyactualhrs');
+    Route::get('markattencance', [AttendanceController::class, 'markattencance'])->name('markattencance');
 
-Route::get('peopleAttreport', [AttendanceController::class, 'peopleAttreport'])->name('peopleAttreport');
+    Route::get('checkattendance/{id}', [AttendancePreviewController::class, 'checkattendance'])->name('checkattendance');
 
-Route::get('settargets', [AttendanceController::class, 'settargets'])->name('settargets');
+    Route::get('checkattendance1', [AttendancePreviewController::class, 'checkattendance1'])->name('checkattendance1');
 
-Route::get('createtargets', [AttendanceController::class, 'createtargets'])->name('createtargets');
+    Route::get('resetpasswordsu/{id}', [SystemUsersController::class, 'resetpasswordsu'])->name('resetpasswordsu');
 
-Route::post('savetargets', [AttendanceController::class, 'savetargets'])->name('savetargets');
+    Route::get('deleteUser/{id}', [SystemUsersController::class, 'deleteUser'])->name('deleteUser');
+    Route::get('importemployee', [EmployeeController::class, 'importemployee'])->name('importemployee');
 
-Route::get('reportsummary', [AttendanceController::class, 'reportsummary'])->name('reportsummary');
+    Route::get('import_Employees', [EmployeeController::class, 'import_Employees'])->name('import_Employees');
 
-Route::get('yestreportsummary', [AttendanceController::class, 'yestreportsummary'])->name('yestreportsummary');
+    Route::post('import', [EmployeeController::class, 'import'])->name('import');
 
-Route::get('plantattendancereg', [AttendanceController::class, 'plantattendancereg'])->name('plantattendancereg');
+    Route::get('sethours', [EmployeeController::class, 'sethours'])->name('sethours');
 
-Route::resource('overtime', OvertimeController::class);
+    Route::post('setdefaulthrs', [EmployeeController::class, 'setdefaulthrs'])->name('setdefaulthrs');
 
-Route::get('markovertime', [OvertimeController::class, 'markovertime'])->name('markovertime');
+    Route::get('weeklystdhrs', [AttendanceController::class, 'weeklystdhrs'])->name('weeklystdhrs');
 
-Route::get('overtimereport', [OvertimeController::class, 'overtimereport'])->name('overtimereport');
+    Route::get('weeklyactualhrs', [AttendanceController::class, 'weeklyactualhrs'])->name('weeklyactualhrs');
 
-Route::post('activate/{id}', [EmployeeController::class, 'activate'])->name('activate');
+    Route::get('peopleAttreport', [AttendanceController::class, 'peopleAttreport'])->name('peopleAttreport');
 
-Route::get('otpreview', [OvertimeController::class, 'otpreview'])->name('otpreview');
+    Route::get('settargets', [AttendanceController::class, 'settargets'])->name('settargets');
 
-Route::get('checkovertime', [OvertimeController::class, 'checkovertime'])->name('checkovertime');
+    Route::get('createtargets', [AttendanceController::class, 'createtargets'])->name('createtargets');
 
-Route::get('confirmovertime', [OvertimeController::class, 'confirmovertime'])->name('confirmovertime');
+    Route::post('savetargets', [AttendanceController::class, 'savetargets'])->name('savetargets');
 
-Route::post('previewstore', [OvertimeController::class, 'previewstore'])->name('previewstore');
+    Route::get('reportsummary', [AttendanceController::class, 'reportsummary'])->name('reportsummary');
 
-Route::get('empsample/{name}', [EmployeeController::class,'empsample'])->name('empsample');
+    Route::get('yestreportsummary', [AttendanceController::class, 'yestreportsummary'])->name('yestreportsummary');
 
-Route::post('attendancereport', [AttendanceController::class, 'attendancereport'])->name('attendancereport');
+    Route::get('plantattendancereg', [AttendanceController::class, 'plantattendancereg'])->name('plantattendancereg');
 
-Route::post('settargets', [AttendanceController::class, 'settargets'])->name('settargets');
+    Route::resource('overtime', OvertimeController::class);
 
-Route::post('destroytag/{id}', [AttendanceController::class, 'destroytag'])->name('destroytag');
+    Route::get('markovertime', [OvertimeController::class, 'markovertime'])->name('markovertime');
 
-Route::post('destroygcatag/{id}', [GcaScoreController::class, 'destroygcatag'])->name('destroygcatag');
+    Route::get('overtimereport', [OvertimeController::class, 'overtimereport'])->name('overtimereport');
 
-Route::get('authorisedhrs', [OvertimeController::class, 'authorisedhrs'])->name('authorisedhrs');
+    Route::post('activate/{id}', [EmployeeController::class, 'activate'])->name('activate');
 
-Route::post('saveauthhrs', [OvertimeController::class, 'saveauthhrs'])->name('saveauthhrs');
+    Route::get('otpreview', [OvertimeController::class, 'otpreview'])->name('otpreview');
 
-Route::post('destroyauthhrs/{id}', [OvertimeController::class, 'destroyauthhrs'])->name('destroyauthhrs');
+    Route::get('checkovertime', [OvertimeController::class, 'checkovertime'])->name('checkovertime');
 
-Route::get('trackperformance', [GraphController::class, 'trackperformance'])->name('trackperformance');
+    Route::get('confirmovertime', [OvertimeController::class, 'confirmovertime'])->name('confirmovertime');
 
-Route::get('checkloaned', [OvertimeController::class, 'checkloaned'])->name('checkloaned');
+    Route::post('previewstore', [OvertimeController::class, 'previewstore'])->name('previewstore');
 
-Route::get('approveloaned', [OvertimeController::class, 'approveloaned'])->name('approveloaned');
+    Route::get('empsample/{name}', [EmployeeController::class, 'empsample'])->name('empsample');
 
-Route::get('assignshop', [SystemUsersController::class, 'assignshop'])->name('assignshop');
+    Route::post('attendancereport', [AttendanceController::class, 'attendancereport'])->name('attendancereport');
 
-Route::get('assignsection', [SystemUsersController::class,'assignsection'])->name('assignsection');
+    Route::post('settargets', [AttendanceController::class, 'settargets'])->name('settargets');
 
+    Route::post('destroytag/{id}', [AttendanceController::class, 'destroytag'])->name('destroytag');
 
-Route::get('productionschedule', [ProductiontargetController::class,'productionschedule'])->name('productionschedule');
+    Route::post('destroygcatag/{id}', [GcaScoreController::class, 'destroygcatag'])->name('destroygcatag');
 
-Route::post('store', [ProductiontargetController::class,'store'])->name('store');
+    Route::get('authorisedhrs', [OvertimeController::class, 'authorisedhrs'])->name('authorisedhrs');
 
-Route::post('update', [GcaScoreController::class,'update'])->name('update');
+    Route::post('saveauthhrs', [OvertimeController::class, 'saveauthhrs'])->name('saveauthhrs');
 
-Route::get('trackperformance', [ProductiontargetController::class, 'trackperformance'])->name('trackperformance');
+    Route::post('destroyauthhrs/{id}', [OvertimeController::class, 'destroyauthhrs'])->name('destroyauthhrs');
 
-Route::get('gcalist', [GcaScoreController::class, 'gcalist'])->name('gcalist');
+    Route::get('trackperformance', [GraphController::class, 'trackperformance'])->name('trackperformance');
 
-Route::get('exportstafftoexcel', [EmployeeController::class,'exportstafftoexcel'])->name('exportstafftoexcel');
+    Route::get('checkloaned', [OvertimeController::class, 'checkloaned'])->name('checkloaned');
 
-Route::get('comments', [ProductiontargetController::class, 'comments'])->name('comments');
+    Route::get('approveloaned', [OvertimeController::class, 'approveloaned'])->name('approveloaned');
 
-Route::get('editchedule/{id}', [ProductiontargetController::class, 'editchedule'])->name('editchedule');
+    Route::get('assignshop', [SystemUsersController::class, 'assignshop'])->name('assignshop');
 
-Route::post('/destroyschedule/{id}', [ProductiontargetController::class, 'destroyschedule'])->name('destroyschedule');
+    Route::get('assignsection', [SystemUsersController::class, 'assignsection'])->name('assignsection');
 
-Route::post('updateschedule', [ProductiontargetController::class, 'updateschedule'])->name('updateschedule');
 
-Route::get('attendceregister', [AttendanceController::class, 'attendceregister'])->name('attendceregister');
+    Route::get('productionschedule', [ProductiontargetController::class, 'productionschedule'])->name('productionschedule');
 
-Route::get('plantattendance', [AttendanceController::class, 'plantattendance'])->name('plantattendance');
+    Route::post('store', [ProductiontargetController::class, 'store'])->name('store');
 
-Route::get('actualproduction', [ProductiontargetController::class, 'actualproduction'])->name('actualproduction');
+    Route::post('update', [GcaScoreController::class, 'update'])->name('update');
 
-Route::get('exportActualprodn', [ProductiontargetController::class,'exportActualprodn'])->name('exportActualprodn');
+    Route::get('trackperformance', [ProductiontargetController::class, 'trackperformance'])->name('trackperformance');
 
-Route::get('exportattendRegister', [AttendanceController::class,'exportattendRegister'])->name('exportattendRegister');
+    Route::get('gcalist', [GcaScoreController::class, 'gcalist'])->name('gcalist');
 
-Route::get('fcwschedule', [ProductiontargetController::class,'fcwschedule'])->name('fcwschedule');
+    Route::get('exportstafftoexcel', [EmployeeController::class, 'exportstafftoexcel'])->name('exportstafftoexcel');
 
-Route::post('storefcwschedule', [ProductiontargetController::class,'storefcwschedule'])->name('storefcwschedule');
+    Route::get('comments', [ProductiontargetController::class, 'comments'])->name('comments');
 
-Route::get('bufferstatus', [ProductiontargetController::class,'bufferstatus'])->name('bufferstatus');
+    Route::get('editchedule/{id}', [ProductiontargetController::class, 'editchedule'])->name('editchedule');
 
-Route::get('sections', [ShopController::class,'sections'])->name('sections');
+    Route::post('/destroyschedule/{id}', [ProductiontargetController::class, 'destroyschedule'])->name('destroyschedule');
 
-Route::post('savesections', [ShopController::class, 'savesections'])->name('savesections');
+    Route::post('updateschedule', [ProductiontargetController::class, 'updateschedule'])->name('updateschedule');
 
-Route::get('overtimepdf', [OvertimeController::class,'overtimepdf'])->name('overtimepdf');
+    Route::get('attendceregister', [AttendanceController::class, 'attendceregister'])->name('attendceregister');
 
-Route::get('attendRegisterpdf', [AttendanceController::class,'attendRegisterpdf'])->name('attendRegisterpdf');
+    Route::get('plantattendance', [AttendanceController::class, 'plantattendance'])->name('plantattendance');
 
-Route::get('gcatarget', [GcaScoreController::class, 'gcatarget'])->name('gcatarget');
-Route::get('remover/{id}', [GcaScoreController::class, 'remover'])->name('remover');
+    Route::get('actualproduction', [ProductiontargetController::class, 'actualproduction'])->name('actualproduction');
 
-Route::get('mangcatarget', [GcaScoreController::class, 'mangcatarget'])->name('mangcatarget');
+    Route::get('exportActualprodn', [ProductiontargetController::class, 'exportActualprodn'])->name('exportActualprodn');
 
-Route::get('delayedunits', [ProductiontargetController::class,'delayedunits'])->name('delayedunits');
+    Route::get('exportattendRegister', [AttendanceController::class, 'exportattendRegister'])->name('exportattendRegister');
 
-Route::get('yrresponsesummary', [SummaryController::class,'yrresponsesummary'])->name('yrresponsesummary');
+    Route::get('fcwschedule', [ProductiontargetController::class, 'fcwschedule'])->name('fcwschedule');
 
-Route::get('mnthresponsesummary', [SummaryController::class,'mnthresponsesummary'])->name('mnthresponsesummary');
+    Route::post('storefcwschedule', [ProductiontargetController::class, 'storefcwschedule'])->name('storefcwschedule');
 
-Route::get('yrpeoplesummary', [SummaryController::class,'yrpeoplesummary'])->name('yrpeoplesummary');
+    Route::get('bufferstatus', [ProductiontargetController::class, 'bufferstatus'])->name('bufferstatus');
 
-Route::get('mnthpeoplesummary', [SummaryController::class,'mnthpeoplesummary'])->name('mnthpeoplesummary');
+    Route::get('sections', [ShopController::class, 'sections'])->name('sections');
 
-Route::get('yrqualitysummary', [SummaryController::class,'yrqualitysummary'])->name('yrqualitysummary');
+    Route::post('savesections', [ShopController::class, 'savesections'])->name('savesections');
 
-Route::get('mnthqualitysummary', [SummaryController::class,'mnthqualitysummary'])->name('mnthqualitysummary');
+    Route::get('overtimepdf', [OvertimeController::class, 'overtimepdf'])->name('overtimepdf');
 
-Route::get('shopresponsesummary', [SummaryController::class,'shopresponsesummary'])->name('shopresponsesummary');
+    Route::get('attendRegisterpdf', [AttendanceController::class, 'attendRegisterpdf'])->name('attendRegisterpdf');
 
-Route::get('unitspershop/{id}', [DashboardController::class, 'unitspershop'])->name('unitspershop');
+    Route::get('gcatarget', [GcaScoreController::class, 'gcatarget'])->name('gcatarget');
+    Route::get('remover/{id}', [GcaScoreController::class, 'remover'])->name('remover');
 
-Route::get('bulkauth', [OvertimeController::class,'bulkauth'])->name('bulkauth');
+    Route::get('mangcatarget', [GcaScoreController::class, 'mangcatarget'])->name('mangcatarget');
 
-Route::get('saveapprovals', [OvertimeController::class,'saveapprovals'])->name('saveapprovals');
-Route::get('today_attendance_view', [AttendanceController::class, 'today_attendance_view'])->name('today_attendance_view');
-Route::get('yesterday_attendance_view', [AttendanceController::class, 'yesterday_attendance_view'])->name('yesterday_attendance_view');
+    Route::get('delayedunits', [ProductiontargetController::class, 'delayedunits'])->name('delayedunits');
+
+    Route::get('yrresponsesummary', [SummaryController::class, 'yrresponsesummary'])->name('yrresponsesummary');
+
+    Route::get('mnthresponsesummary', [SummaryController::class, 'mnthresponsesummary'])->name('mnthresponsesummary');
+
+    Route::get('yrpeoplesummary', [SummaryController::class, 'yrpeoplesummary'])->name('yrpeoplesummary');
+
+    Route::get('mnthpeoplesummary', [SummaryController::class, 'mnthpeoplesummary'])->name('mnthpeoplesummary');
+
+    Route::get('yrqualitysummary', [SummaryController::class, 'yrqualitysummary'])->name('yrqualitysummary');
+
+    Route::get('mnthqualitysummary', [SummaryController::class, 'mnthqualitysummary'])->name('mnthqualitysummary');
+
+    Route::get('shopresponsesummary', [SummaryController::class, 'shopresponsesummary'])->name('shopresponsesummary');
+
+    Route::get('unitspershop/{id}', [DashboardController::class, 'unitspershop'])->name('unitspershop');
+
+    Route::get('bulkauth', [OvertimeController::class, 'bulkauth'])->name('bulkauth');
+
+    Route::get('saveapprovals', [OvertimeController::class, 'saveapprovals'])->name('saveapprovals');
+    Route::get('today_attendance_view', [AttendanceController::class, 'today_attendance_view'])->name('today_attendance_view');
+    Route::get('yesterday_attendance_view', [AttendanceController::class, 'yesterday_attendance_view'])->name('yesterday_attendance_view');
 });
 
 
-Route::get('screenboard', [ScreenboardController::class,'screenboard'])->name('screenboard');
+Route::get('screenboard', [ScreenboardController::class, 'screenboard'])->name('screenboard');
 
-Route::get('screenboardindex', [ScreenboardController::class,'screenboardindex'])->name('screenboardindex');
+Route::get('screenboardindex', [ScreenboardController::class, 'screenboardindex'])->name('screenboardindex');
 
-Route::get('screenboardpershop', [ScreenboardController::class,'screenboardpershop'])->name('screenboardpershop');
+Route::get('screenboardpershop', [ScreenboardController::class, 'screenboardpershop'])->name('screenboardpershop');
 
-Route::get('screenboarddefects/{shopid}', [ScreenboardController::class,'screenboarddefects'])->name('screenboarddefects');
+Route::get('screenboarddefects/{shopid}', [ScreenboardController::class, 'screenboarddefects'])->name('screenboarddefects');
 
-Route::get('screenboardpershopReload', [ScreenboardController::class,'screenboardpershopReload'])->name('screenboardpershopReload');
+Route::get('screenboardpershopReload', [ScreenboardController::class, 'screenboardpershopReload'])->name('screenboardpershopReload');
 
-Route::get('screenboardindexReload', [ScreenboardController::class,'screenboardindexReload'])->name('screenboardindexReload');
+Route::get('screenboardindexReload', [ScreenboardController::class, 'screenboardindexReload'])->name('screenboardindexReload');
 
-Route::get('delayedunitsExport', [ProductiontargetController::class,'delayedunitsExport'])->name('delayedunitsExport');
+Route::get('delayedunitsExport', [ProductiontargetController::class, 'delayedunitsExport'])->name('delayedunitsExport');
 
-Route::get('timer', [ScreenboardController::class,'timer'])->name('timer');
+Route::get('timer', [ScreenboardController::class, 'timer'])->name('timer');
 
-Route::get('screenboardall', [ScreenboardController::class,'screenboardall'])->name('screenboardall');
-Route::post('load_defects', [ScreenboardController::class,'load_defects'])->name('load_defects');
-Route::post('load_datable_defects', [ScreenboardController::class,'load_datable_defects'])->name('load_datable_defects');
-Route::get('fcadashboard', [FcaDashBoardController::class,'dashboard'])->name('fcadashboard');
-Route::get('gcadrl/{date}', [FcaDashBoardController::class,'gcadrl'])->name('gcadrl');
-Route::get('gcadrr/{date}', [FcaDashBoardController::class,'gcadrr'])->name('gcadrr');
-Route::get('gcacare/{date}', [FcaDashBoardController::class,'gcacare'])->name('gcacare');
-Route::get('cv-gca/{date}', [FcaDashBoardController::class,'cvgca'])->name('cv-gca');
-Route::get('lcv-gca/{date}', [FcaDashBoardController::class,'lcvgca'])->name('lcv-gca');
-
-
-
-
-
-
-
-
+Route::get('screenboardall', [ScreenboardController::class, 'screenboardall'])->name('screenboardall');
+Route::post('load_defects', [ScreenboardController::class, 'load_defects'])->name('load_defects');
+Route::post('load_datable_defects', [ScreenboardController::class, 'load_datable_defects'])->name('load_datable_defects');
+Route::get('fcadashboard', [FcaDashBoardController::class, 'dashboard'])->name('fcadashboard');
+Route::get('gcadrl/{date}', [FcaDashBoardController::class, 'gcadrl'])->name('gcadrl');
+Route::get('gcadrr/{date}', [FcaDashBoardController::class, 'gcadrr'])->name('gcadrr');
+Route::get('gcacare/{date}', [FcaDashBoardController::class, 'gcacare'])->name('gcacare');
+Route::get('cv-gca/{date}', [FcaDashBoardController::class, 'cvgca'])->name('cv-gca');
+Route::get('lcv-gca/{date}', [FcaDashBoardController::class, 'lcvgca'])->name('lcv-gca');

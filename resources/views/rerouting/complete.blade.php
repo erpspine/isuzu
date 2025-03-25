@@ -49,9 +49,15 @@
                 <h4 class="card-title">{{$vehicle->model->model_name}}-{{$vehicle->vin_no}} <span class="ml-5">Lot:{{$vehicle->lot_no}} Job:{{$vehicle->job_no}} Route:{{$vehicle->route}}</span></h4>
         
                 <div class="row">
-                    <div class="col-md-4">
-                        <label for="lot">Change To</label>
-                        {!! Form::select('to_route_id', $route,  null, ['class' => 'select2 form-control custom-select','style'=>'height: 40px;width: 100%;']); !!}
+                <div class="col-md-3">
+                        <label for="lot">From Route</label>
+                        {!! Form::select('from_route_id', $fromroute,  null, ['class' => 'select2 form-control custom-select','style'=>'height: 40px;width: 100%;','required']); !!}
+                        
+                    </div>
+
+                    <div class="col-md-3">
+                        <label for="lot">To Route</label>
+                        {!! Form::select('to_route_id', $route,  null, ['class' => 'select2 form-control custom-select','placeholder'=>'Select','style'=>'height: 40px;width: 100%;','required']); !!}
                         
                     </div>
                     <div class="col-md-6">
@@ -64,6 +70,9 @@
 
                   
                   
+                </div>
+                <div class="row">
+                    Route 1 F-series, Route 2  N-Series, Route 5 LCV 
                 </div>
              
               
@@ -98,9 +107,9 @@
                 <table class="table table-bordered table-striped table-condensed" id="product_table">
                     <thead>
                         <tr>
-                            <th class="col-sm-4">Current Shop</th>
-                            <th class="col-sm-4">Change With</th>
-                            <th class="col-sm-4">Remove</th>
+                            <th class="col-sm-4">Shop Stages</th>
+                            <th class="col-sm-4">Routing Done</th>
+                   
                             
                             
                         </tr>
@@ -125,29 +134,19 @@
     {{$unit->shop->shop_name}}
 
         <input type="hidden" name="unit_movement_id[]" value="{{ $unit->id }}">   
-        <input type="hidden" name="from_shop_id[]" value="{{ $unit->shop_id }}">   
+        <input type="hidden" name="shop_id[]" value="{{ $unit->shop_id }}">  
+        <input type="hidden" name="current_shop[]" value="{{ $unit->current_shop }}"> 
+        <input type="hidden" name="route_id[]" value="{{ $unit->route_id }}">
+        <input type="hidden" name="route_number[]" value="{{ $unit->route_number }}">
+        <input type="hidden" name="group_shop_id[]" value="{{ $unit->group_shop_id }}"> 
     </td>
     <td>
-        <select name="to_shop_id[]"  class="form-control">
-            <option value="">Select Shop<option>
-            @foreach ( $shops as $shop )
-            <option value="{{ $shop->id }}">{{ $shop->shop_name }}<option>
-                
-            @endforeach
-            
-        </select>
       
-
+      
+{{  ($unit->current_shop == 0) ? "Completed" : "Pending" }}
          
     </td>
-      <td>
-        <div class="col-md-3">
-            <input type="checkbox" id="md_checkbox_{{  $unit->shop_id }}" value="1" name="is_deleted[]" class="material-inputs filled-in chk-col-red"  />
-            <label for="md_checkbox_{{  $unit->shop_id }}"></label>
-        </div>
 
-         
-    </td>
     
 
 </tr>

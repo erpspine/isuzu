@@ -1,15 +1,15 @@
 @extends('layouts.app')
-@section('title', 'Material  Lists')
+@section('title', 'Material Lists')
 @section('content')
     <!-- ============================================================== -->
     <!-- Bread crumb and right sidebar toggle -->
     <!-- ============================================================== -->
     <div class="row page-titles">
         <div class="col-md-5 col-12 align-self-center">
-            <h3 class="text-themecolor mb-0">Material  Lists </h3>
+            <h3 class="text-themecolor mb-0">Material Lists </h3>
             <ol class="breadcrumb mb-0 p-0 bg-transparent">
                 <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
-                <li class="breadcrumb-item active">Material  Lists</li>
+                <li class="breadcrumb-item active">Material Lists</li>
             </ol>
         </div>
         <div class="col-md-7 col-12 align-self-center d-none d-md-block">
@@ -26,7 +26,7 @@
     <div class="container-fluid">
         <div class="content-header row pb-1">
             <div class="content-header-left col-md-6 col-12 mb-2">
-                <h3 class="mb-0">Material  Lists</h3>
+                <h3 class="mb-0">Material Lists(<span class="text-danger"> Select Model to load Data</span>)</h3>
             </div>
             <div class="content-header-right col-md-6 col-12">
                 <div class="media width-250 float-right">
@@ -68,27 +68,27 @@
                 <div class="card">
                     <div class="card-body">
 
-                            <table class="table table-striped table-bordered " id="tools">
-                                <thead>
-                                    <tr>
-                                        <th>Action</th>
-                                        <th>Model</th>
-                                        <th>Case</th>
-                                        <th>Box</th>
-                                        <th>Partnumber</th>
-                                        <th>Description</th>
-                                  
-                                        <th>Qty/Lot</th>
-                                        <th>LOC1</th>
-                                        <th>QTY1</th>
-                                        <th>LOC2</th>
-                                        <th>QTY2</th>
+                        <table class="table table-striped table-bordered " id="tools">
+                            <thead>
+                                <tr>
+                                    <th>Action</th>
+                                    <th>Model</th>
+                                    <th>Case</th>
+                                    <th>Box</th>
+                                    <th>Partnumber</th>
+                                    <th>Description</th>
+
+                                    <th>Qty/Lot</th>
+                                    <th>LOC1</th>
+                                    <th>QTY1</th>
+                                    <th>LOC2</th>
+                                    <th>QTY2</th>
 
 
 
-                                    </tr>
-                                </thead>
-                            </table>
+                                </tr>
+                            </thead>
+                        </table>
 
                     </div>
                 </div>
@@ -135,21 +135,31 @@
             var tools = $('#tools').DataTable({
                 processing: true,
                 serverSide: true,
-                ajax: {
-                    url: '{{ route('material-distribution.index') }}',
-                    data: function(d) {
-                        d.material_distribution_model_id = $('#material_distribution_model_id').val();
-
-                    }
+                autoWidth: false, // Improves responsiveness
+                paging: true,
+                searching: true,
+                ordering: true,
+                ajax: function(data, callback, settings) {
+                    var modelId = $('#material_distribution_model_id').val();
+                    $.ajax({
+                        url: '{{ route('material-distribution.index') }}',
+                        data: {
+                            material_distribution_model_id: modelId
+                        },
+                        success: function(response) {
+                            callback(response);
+                        }
+                    });
                 },
-                columns: [ {
+                columns: [{
                         data: 'action',
                         name: 'action'
                     },
                     {
                         data: 'model',
                         name: 'model'
-                    },{
+                    },
+                    {
                         data: 'pna_case',
                         name: 'pna_case'
                     },
@@ -165,8 +175,6 @@
                         data: 'Description',
                         name: 'Description'
                     },
- 
-
                     {
                         data: 'qty_lot',
                         name: 'qty_lot'
@@ -178,7 +186,8 @@
                     {
                         data: 'QTY1',
                         name: 'QTY1'
-                    }, {
+                    },
+                    {
                         data: 'LOC2',
                         name: 'LOC2'
                     },
@@ -186,22 +195,16 @@
                         data: 'QTY2',
                         name: 'QTY2'
                     }
-
-
                 ],
                 order: [
-                    ['3', 'asc']
+                    [3, 'asc']
                 ],
-                'columnDefs': [{
-                    "orderable": false,
-                    "searchable": false,
-                    'targets': [0]
+                columnDefs: [{
+                    orderable: false,
+                    searchable: false,
+                    targets: [0]
                 }],
-                'select': {
-                    style: 'multi',
-                    selector: 'td:first-child'
-                },
-                'lengthMenu': [
+                lengthMenu: [
                     [10, 25, 50, -1],
                     [10, 25, 50, "All"]
                 ],
@@ -237,8 +240,18 @@
                         extend: 'colvis',
                         text: '<i title="column visibility" class="fa fa-eye"></i>',
                         columns: ':gt(0)'
-                    },
-                ],
+                    }
+                ]
+            });
+
+            // Reload DataTable when a model is selected
+            $('#material_distribution_model_id').change(function() {
+                var modelId = $(this).val();
+                if (modelId) {
+                    tools.ajax.reload(); // Reload only when a model is selected
+                } else {
+                    tools.clear().draw(); // Clear table when no model is selected
+                }
             });
 
 
@@ -290,7 +303,7 @@
                             url: href,
                             dataType: "json",
                             data: {
-                                _method:'DELETE',
+                                _method: 'DELETE',
                                 '_token': '{{ csrf_token() }}',
                             },
                             success: function(result) {

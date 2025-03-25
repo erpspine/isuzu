@@ -1,17 +1,19 @@
 <?php
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\appusers\AppUsersController;
-use App\Http\Controllers\Api\HomeController;
-use App\Http\Controllers\Api\QuizCategoryController;
-use App\Http\Controllers\Api\QuizController;
-use App\Http\Controllers\Api\UnitMovementController;
 use App\Http\Controllers\Api\Defect;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\GcaController;
 use App\Http\Controllers\Api\PnaController;
-use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\QcosController;
+use App\Http\Controllers\Api\QuizController;
+use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\QuizCategoryController;
+use App\Http\Controllers\Api\UnitMovementController;
+use App\Http\Controllers\Api\ApiScreenBoadController;
+use App\Http\Controllers\appusers\AppUsersController;
+use App\Http\Controllers\screenboard\ScreenboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -122,6 +124,9 @@ Route::middleware('auth:appUser')->get('/user', function (Request $request) {
 });
 
 Route::post('apilogin', [AppUsersController::class,'login'])->name('apilogin');
+Route::get('ApiLoadScreenboard', [ScreenboardController::class, 'screenboardindexReload']);
+Route::get('ApiLoadShops', [ScreenboardController::class, 'ApiLoadShops']);
+Route::get('ApiScreenboardpershopReload', [ScreenboardController::class, 'screenboardpershopReload']);
 
 
 });

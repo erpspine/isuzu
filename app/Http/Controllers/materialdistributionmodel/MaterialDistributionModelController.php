@@ -20,27 +20,29 @@ class MaterialDistributionModelController extends Controller
      */
     public function index()
     {
+
         if (request()->ajax()) {
-            $models = MaterialDistributionModel::whereNotNull('id');
+            $query = MaterialDistributionModel::query();
+
             $material_distribution_model_id = request()->get('material_distribution_model_id', null);
             if (!empty($material_distribution_model_id)) {
-                $models->where('material_distribution_model_id', $material_distribution_model_id);
+                $query->where('id', $material_distribution_model_id);  // Corrected filtering
             }
 
-            $models-> get();
-            return DataTables::of($models)
-                ->addColumn('action', function ($models) {
+            return DataTables::of($query)
+                ->addColumn('action', function ($model) {
                     return '
-               <a href="' . route('material-distribution-model.edit', [$models->id]) . '"  style="line-height: 20px;" class="btn btn-outline-success btn-circle btn-sm"><i class="fas fa-pencil-alt"></i></a>
-               <a href="' . route('material-distribution-model.destroy', [$models->id]) . '" style="line-height: 20px;" class="btn btn-outline-danger btn-circle btn-sm delete-model"><i class="fas fa-trash"></i></a>
-                ';
+                <a href="' . route('material-distribution-model.edit', [$model->id]) . '"  class="btn btn-outline-success btn-circle btn-sm"><i class="fas fa-pencil-alt"></i></a>
+                <a href="' . route('material-distribution-model.destroy', [$model->id]) . '" class="btn btn-outline-danger btn-circle btn-sm delete-model"><i class="fas fa-trash"></i></a>
+            ';
                 })
-                ->addColumn('category', function ($models) {
-                    return @$models->category->model_name;
+                ->addColumn('category', function ($model) {
+                    return optional($model->category)->model_name;
                 })
                 ->rawColumns(['action'])
                 ->make(true);
         }
+
 
         return view('materialdistributionmodels.index');
     }
@@ -161,42 +163,39 @@ class MaterialDistributionModelController extends Controller
      */
     public function destroy($id)
     {
-        if (request()->ajax()) {
-            try {
-                $can_be_deleted = true;
-                $error_msg = '';
-                //Check if any routing has been done
-                //do logic here
-                $items = MaterialDistributionModel::where('id', $id)
-                    ->first();
-                $materials = Part_Template::where('material_distribution_model_id', $id)
-                    ->get();
-                if ($can_be_deleted) {
-                    if (!empty($items)) {
-                        DB::beginTransaction();
-                        $materials->delete();
-                        $items->delete();
-                        DB::commit();
-                    }
-                    $output = [
-                        'success' => true,
-                        'msg' => "Model Deleted Successfully"
-                    ];
-                } else {
-                    $output = [
-                        'success' => false,
-                        'msg' => $error_msg
-                    ];
-                }
-            } catch (\Exception $e) {
-                DB::rollBack();
-                \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
-                $output = [
-                    'success' => false,
-                    'msg' => "Something Went Wrong"
-                ];
+        if (!request()->ajax()) {
+            return response()->json(['success' => false, 'msg' => 'Invalid request'], 400);
+        }
+
+        try {
+            // Fetch the material distribution model
+            $item = MaterialDistributionModel::find($id);
+            if (!$item) {
+                return response()->json(['success' => false, 'msg' => 'Model not found'], 404);
             }
-            return $output;
+
+            // Fetch related materials
+            $materials = Part_Template::where('material_distribution_model_id', $id);
+
+            DB::beginTransaction();
+
+            // Delete related materials
+            $materials->delete();
+
+            // Delete the main model
+            $item->delete();
+
+            DB::commit();
+
+            return response()->json(['success' => true, 'msg' => 'Model Deleted Successfully']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error deleting model: " . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+
+            return response()->json(['success' => false, 'msg' => 'Something Went Wrong'], 500);
         }
     }
 }

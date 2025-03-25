@@ -86,6 +86,7 @@ class ProductionReportController extends Controller
           return $query;
         })->get(['lot_no', 'model_id']);
         $shops = Shop::where('check_point', '=', '1')->orderBy('group_order', 'asc')->get();
+       
         unset($shops[0], $shops[5], $shops[7], $shops[10], $shops[13]);
         $drl_arr = [];
         $unit_count = [];
@@ -161,6 +162,7 @@ class ProductionReportController extends Controller
         })->get(['lot_no', 'model_id']);
         $shops = Shop::where('check_point', '=', '1')->orderBy('group_order', 'asc')->get();
         unset($shops[0], $shops[5], $shops[7], $shops[10], $shops[13]);
+       
         $drl_arr = [];
         $unit_count = [];
         $vehicleid = [];

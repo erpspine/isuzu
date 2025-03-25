@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Http\Controllers\Rerouting;
-
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\vehicle_units\vehicle_units;
@@ -11,18 +9,13 @@ use App\Models\unitroute\Unitroutes;
 use App\Models\unitmovement\Unitmovement;
 use App\Models\ReroutingDetails\ReroutingDetails;
 use App\Models\Rerouting\Rerouting;
-
 use App\Models\unitmapping\Unitmapping;
-
-
 use App\Models\shop\Shop;
 use Illuminate\Support\Facades\DB;
 use Batch;
-
 use App\Models\queryanswer\Queryanswer;
 use App\Models\querydefect\Querydefect;
 use App\Models\drr\Drr;
-
 class ReroutingController extends Controller
 {
     /**
@@ -34,7 +27,6 @@ class ReroutingController extends Controller
     {
         //
     }
-
     /**
      * Show the form for creating a new resource.
      *
@@ -42,13 +34,12 @@ class ReroutingController extends Controller
      */
     public function create()
     {
-        $lot = vehicle_units::where('status','!=','2')->distinct('lot_no')->pluck('lot_no', 'lot_no');
-        $job = vehicle_units::where('status','!=','2')->distinct('job_no')->pluck('job_no', 'job_no');
+        $lot = vehicle_units::where('status', '!=', '2')->distinct('lot_no')->pluck('lot_no', 'lot_no');
+        $job = vehicle_units::where('status', '!=', '2')->distinct('job_no')->pluck('job_no', 'job_no');
         $model = Unit_model::pluck('model_name', 'id');
-        $data=[];
-        return view('rerouting.create')->with(compact('lot','job','model','data'));
+        $data = [];
+        return view('rerouting.create')->with(compact('lot', 'job', 'model', 'data'));
     }
-
     /**
      * Store a newly created resource in storage.
      *
@@ -59,7 +50,6 @@ class ReroutingController extends Controller
     {
         //
     }
-
     /**
      * Display the specified resource.
      *
@@ -70,7 +60,6 @@ class ReroutingController extends Controller
     {
         //
     }
-
     /**
      * Show the form for editing the specified resource.
      *
@@ -81,7 +70,6 @@ class ReroutingController extends Controller
     {
         //
     }
-
     /**
      * Update the specified resource in storage.
      *
@@ -93,7 +81,6 @@ class ReroutingController extends Controller
     {
         //
     }
-
     /**
      * Remove the specified resource from storage.
      *
@@ -104,295 +91,261 @@ class ReroutingController extends Controller
     {
         //
     }
-
-
     public function filtererouting(Request $request)
     {
-
-        if(!empty($request->lot_no) || !empty($request->job_no) ||  !empty($request->model_id) ){
-
-            $vehicle = vehicle_units::where('status','!=','2')->where('model_id', '!=', '0');
-          
-
-
-           if(!empty($request->lot_no)){
-
-            $vehicle->whereIn('lot_no', $request->lot_no);
+        if (!empty($request->lot_no) || !empty($request->job_no) ||  !empty($request->model_id)) {
+            $vehicle = vehicle_units::where('status', '!=', '2')->where('model_id', '!=', '0');
+            if (!empty($request->lot_no)) {
+                $vehicle->whereIn('lot_no', $request->lot_no);
             }
-
-            
-           if(!empty($request->job_no)){
-
-            $vehicle->whereIn('job_no', $request->job_no);
+            if (!empty($request->job_no)) {
+                $vehicle->whereIn('job_no', $request->job_no);
             }
-             if(!empty($request->model_id)){
-
+            if (!empty($request->model_id)) {
                 $vehicle->whereIn('model_id', $request->model_id);
             }
-         
-       
-        $data=$vehicle->get();
-       
-    
-           
-        $lot = vehicle_units::where('status','!=','2')->distinct('lot_no')->pluck('lot_no', 'lot_no');
-        $job = vehicle_units::where('status','!=','2')->distinct('job_no')->pluck('job_no', 'job_no');
-        $model = Unit_model::pluck('model_name', 'id');
-
-
-       // return redirect()->route('qrcodefilterresult', ['lot'=>$lot,'job'=>$job,'model'=>$model,'data'=>$data]);
-
-        //return redirect()->route('qrcode.index')->with(compact('lot','job','model','data'));
-
-
-        return view('rerouting.create')->with(compact('lot','job','model','data'));
-
-        }else{
-             return redirect()->route('qrcode.index')->with('message', 'choose one record!!!');
-
-
+            $data = $vehicle->get();
+            $lot = vehicle_units::where('status', '!=', '2')->distinct('lot_no')->pluck('lot_no', 'lot_no');
+            $job = vehicle_units::where('status', '!=', '2')->distinct('job_no')->pluck('job_no', 'job_no');
+            $model = Unit_model::pluck('model_name', 'id');
+            // return redirect()->route('qrcodefilterresult', ['lot'=>$lot,'job'=>$job,'model'=>$model,'data'=>$data]);
+            //return redirect()->route('qrcode.index')->with(compact('lot','job','model','data'));
+            return view('rerouting.create')->with(compact('lot', 'job', 'model', 'data'));
+        } else {
+            return redirect()->route('qrcode.index')->with('message', 'choose one record!!!');
         }
-
     }
-
-
     public function completererouting($id)
     {
-
-
-        
-
-
         $vehicle = vehicle_units::find($id);
-        $data = Unitmovement::where('vehicle_id',$id)->get();
-        $shops= Shop::where('check_point',1)->orderBy('shop_no', 'asc')->get();
-
-        
-       
-    
-           
-        $route = Unitroutes::distinct('route_number')->pluck('name', 'route_number');
- 
-
-        return view('rerouting.complete')->with(compact('route','vehicle','data','shops','id'));
-
-     
+        $data = Unitmovement::where('vehicle_id', $id)->get();
+        $shops = Shop::where('check_point', 1)->orderBy('shop_no', 'asc')->get();
+        $fromroute = Unitroutes::where('route_number',$vehicle->route)->distinct('route_number')->pluck('name', 'route_number');
+        $caseStatus = $vehicle->route;
+        $newshop=[];
+        switch ($caseStatus) {
+            case 1:
+                $swithshwith=['2'];
+                break;
+            case 2:
+                $swithshwith=['1','5'];
+                break;
+           case 5:
+           $swithshwith=['2'];
+            break;
+            default:
+            $swithshwith=0;
+                break;
+        }
+        if($swithshwith==0){
+            return redirect()->route('rerouting.create')->withErrors(['error' => 'Invalid Route!!']);
+        }
+        $route = Unitroutes::whereIn('route_number',[$swithshwith])->distinct('route_number')->pluck('name', 'route_number');
+        return view('rerouting.complete')->with(compact('route', 'vehicle', 'data','fromroute', 'shops', 'id'));
     }
-
     public function saverouting(Request $request)
     {
-
         $data = $request->only(['vehicle_id', 'from_route_id', 'to_route_id', 'description']);
-        $data['user_id']=auth()->user()->id;
-        $item_data['rerouting_item']  = $request->only(['unit_movement_id','from_shop_id', 'to_shop_id', 'is_deleted']);
-
+        $data['user_id'] = auth()->user()->id;
+        $item_data['rerouting_item']  = $request->only(['unit_movement_id', 'shop_id', 'current_shop', 'route_id','route_number','group_shop_id']);
         $datas = array();
         $i = 0;
-
-        
-
-      
-
         if (request()->ajax()) {
             try {
-
-        
-
-        DB::beginTransaction();
-        $result = ReroutingDetails::create($data);
-
-        if($result->id){
-            $deleted_array=array();
-            $unit_movement_update = array();
-            $shop_array=array();
-          
-            
-            foreach ($item_data['rerouting_item']['unit_movement_id'] as $key => $value) {
-                $deleted=0;
-                $is_shop=0;
-                $save=1;
-           
-            if(isset($item_data['rerouting_item']['is_deleted'][$key])     ){
-                $deleted_array[]=$item_data['rerouting_item']['unit_movement_id'][$key];
-                $deleted=1;
-            }
-
-
-            if(empty($item_data['rerouting_item']['to_shop_id'][$key])){
-                $is_shop=1;
-
-
-            }else{
-                $shop_array[]=array(
-                    "shop_id" =>   $item_data['rerouting_item']['from_shop_id'][$key],
-                    "to_shop_id" =>   $item_data['rerouting_item']['to_shop_id'][$key]
-                  );
-                  
-               
-
-                $maping = Unitmapping::where('shop_id',$item_data['rerouting_item']['to_shop_id'][$key])->where('route_number',$request->to_route_id)->first();
-                $current_shop=Unitmovement::find($item_data['rerouting_item']['unit_movement_id'][$key]);
-                $current_shop=0;
-                if($current_shop!=0){
-                    $current_shop= $item_data['rerouting_item']['to_shop_id'][$key];
-
-                }
-
-          
-                $unit_movement_update[] = array('id' => $item_data['rerouting_item']['unit_movement_id'][$key], 'shop_id' => $item_data['rerouting_item']['to_shop_id'][$key],'route_number'=> $request->to_route_id,'route_id'=> $maping->route_id,'current_shop'=> $current_shop);
-                
-            }
-
-
-            if($deleted==0 && $is_shop==1 ){
-                $save=0;
-
-            }
-
-         
-
-           
-
-            
-
-
-            $datas[] = array(
-                'rerouting_details_id' => $result->id,
-                'unit_movement_id' => $item_data['rerouting_item']['unit_movement_id'][$key],
-                'from_shop_id' => $item_data['rerouting_item']['from_shop_id'][$key],
-                'is_deleted' =>  $deleted,
-                'to_shop_id' => $item_data['rerouting_item']['to_shop_id'][$key]);
-
-              
-
-         
-
-
-        }
-
-    }
-
-      
-
-        // Check validation failure
-    if ($save==0) {
-
-       
-
-        $output = ['success' => false,
-                             'msg' => "Select  Shop Or Checked  must be selected",
-                             ];
-
-                             DB::rollBack(); // roll back transaction if not completely saved
-
-                      
-                             
-     }else{
-//save data to retouting table
-
-
-$savererouting = Rerouting::insert($datas);
-
-// update vehicle
-
-
-
-$v_update = vehicle_units::find($request->vehicle_id); 
-$v_update->update(['route' => $request->to_route_id]);
-$v_update->touch();
-
-
-
-        if($is_shop==0){
-
-
-            foreach ($shop_array as $shopdata) {
-
-                //update query answer
-                $result = Queryanswer::where('vehicle_id',$request->vehicle_id)->where('shop_id',$shopdata['shop_id'])->update(['shop_id' => $shopdata['to_shop_id']]);
-       
-                $result = Querydefect::where('vehicle_id',$request->vehicle_id)->where('shop_id',$shopdata['shop_id'])->update(['shop_id' => $shopdata['to_shop_id']]);
-                $result = Drr::where('vehicle_id',$request->vehicle_id)->where('shop_id',$shopdata['shop_id'])->update(['shop_id' => $shopdata['to_shop_id']]);
-            }
-
-            //update
-
-            $update_unitmovement = new Unitmovement;
-            $index = 'id';
-            Batch::update($update_unitmovement, $unit_movement_update, $index);
-
-
-
-       
-
-
-        }
-
-// delete from unit movement
-        if($deleted==1){
-
-            foreach($deleted_array as $val){
-
-                $deleteunits=Unitmovement::where('id',  $val)->delete();
-
-
-
-            }
-
-
-        }
-
-$update_current_shop=Unitmovement::where('vehicle_id',$request->vehicle_id)->orderby('id', 'desc')->first();
-$update_current_shop->current_shop=$update_current_shop->shop_id;
-$update_current_shop->save();
-// update unit movement
-   DB::commit();
-
-
-        $output = ['success' => true,
-        'msg' => "Re-Routing Done  Successfully"
-    ];
-
-
-
-
-
-     }
-
-
-
-
-    } catch (\Exception $e) {
-
-        DB::rollBack(); // roll back transaction if not completely saved
-        \Log::emergency("File:" . $e->getFile(). "Line:" . $e->getLine(). "Message:" . $e->getMessage());
-            
-        $output = ['success' => false,
-                    'msg' => $e->getMessage(),
+                DB::beginTransaction();
+                $result = ReroutingDetails::create($data);
+                if ($result->id) {
+                    $deleted_array = array();
+                    $unit_movement_update = array();
+                    $shop_array = array();
+                    foreach ($item_data['rerouting_item']['unit_movement_id'] as $key => $value) {
+                        $deleted = 0;
+                        $is_shop = 0;
+                        $save = 1;
+                        if ($result->from_route_id == 1) {
+                            //From F-Series to N-Series
+                            $movement = Unitmovement::find($value);
+                            if ($movement->shop_id == 7) {
+                                $movement->shop_id = 9;
+                                $movement->save();
+                            }
+                            if ($movement->shop_id == 8) {
+                                $movement->shop_id = 10;
+                                $movement->save();
+                            }
+                            if ($movement->group_shop_id == 7) {
+                                $movement->group_shop_id = 9;
+                                $movement->save();
+                            }
+                            if ($movement->group_shop_id == 8) {
+                                $movement->group_shop_id = 10;
+                                $movement->save();
+                            }
+                            if ($movement->route_id == 1) {
+                                $movement->route_id = 3;
+                                $movement->save();
+                            }
+                            if ($movement->route_id == 2) {
+                                $movement->route_id = 4;
+                                $movement->save();
+                            }
+                            $movement->route_number = 2;
+                            $movement->save();
+                            if ($movement->current_shop > 0) {
+                                $movement->current_shop = $movement->shop_id;
+                                $movement->save();
+                            }
+                        }
+                        if ($result->from_route_id == 2) {
+                            //From N-Series to F-Series
+                            $movement = Unitmovement::find($value);
+                            if ($movement->shop_id == 9) {
+                                $movement->shop_id = 7;
+                                $movement->save();
+                            }
+                            if ($movement->shop_id == 10) {
+                                $movement->shop_id = 8;
+                                $movement->save();
+                            }
+                            if ($movement->group_shop_id == 9) {
+                                $movement->group_shop_id = 7;
+                                $movement->save();
+                            }
+                            if ($movement->group_shop_id == 10) {
+                                $movement->group_shop_id = 8;
+                                $movement->save();
+                            }
+                            if ($movement->route_id == 3) {
+                                $movement->route_id = 1;
+                                $movement->save();
+                            }
+                            if ($movement->route_id == 4) {
+                                $movement->route_id = 2;
+                                $movement->save();
+                            }
+                            $movement->route_number = 1;
+                            $movement->save();
+                            if ($movement->current_shop > 0) {
+                                $movement->current_shop = $movement->shop_id;
+                                $movement->save();
+                            }
+                        }
+                    }
+                    DB::commit();
+                    $output = [
+                        'success' => true,
+                        'msg' => "Re-Routing Done  Successfully"
                     ];
+                }else{
+                    $output = [
+                        'success' => false,
+                        'msg' => "Error Updating record",
+                    ];
+                    DB::rollBack(); // roll back transaction if not completely saved
+                }
+            } catch (\Exception $e) {
+                DB::rollBack(); // roll back transaction if not completely saved
+                \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+                $output = [
+                    'success' => false,
+                    'msg' => $e->getMessage(),
+                ];
+            }
+        }
+        return $output;
     }
-   
-}
-
-
-
-     return $output;
-
-     
-
-
-
-     
-        
-      
-    
-
-     
-
-
-
+    public function updateRoute($route, $array)
+    {
+        //F to N
+        if ($route == 1) {
+            foreach ($array as & $value) {
+                switch ($value) {
+                    case 1:
+                        $value = 1;
+                        break;
+                    case 2:
+                        $value = 2;
+                        break;
+                    case 1036:
+                        $value = 1036;
+                        break;
+                    case 3:
+                        $value = 3;
+                        break;
+                    case 4:
+                        $value = 4;
+                        break;
+                    case 5:
+                        $value = 5;
+                        break;
+                    case 6:
+                        $value = 6;
+                        break;
+                    case 7:
+                        $value = 9;
+                        break;
+                    case 8:
+                        $value = 10;
+                        break;
+                    case 28:
+                        $value = 28;
+                        break;
+                    case 14:
+                        $value = 14;
+                        break;
+                    case 15:
+                        $value = 15;
+                        break;
+                    case 16:
+                        $value = 16;
+                        break;
+                }
+            }
+        }   if ($route == 2) { //N to F
+            foreach ($array as &$value) {
+                switch ($value) {
+                    case 1:
+                        $value = 1;
+                        break;
+                    case 2:
+                        $value = 2;
+                        break;
+                    case 1036:
+                        $value = 1036;
+                        break;
+                    case 3:
+                        $value = 3;
+                        break;
+                    case 4:
+                        $value = 4;
+                        break;
+                    case 5:
+                        $value = 5;
+                        break;
+                    case 6:
+                        $value = 6;
+                        break;
+                    case 9:
+                        $value = 7;
+                        break;
+                    case 10:
+                        $value = 8;
+                        break;
+                    case 28:
+                        $value = 28;
+                        break;
+                    case 14:
+                        $value = 14;
+                        break;
+                    case 15:
+                        $value = 15;
+                        break;
+                    case 16:
+                        $value = 16;
+                        break;
+                }
+            }
+        }
+        return $array;
     }
-    
-
-
 }

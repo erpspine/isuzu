@@ -52,8 +52,7 @@
                         {{ Form::close() }}
                     </div>
                 </div>
-            </div>
-        </div>
+ dd($item['bomitem_id']);        </div>
     @endsection
     @section('after-styles')
         {{ Html::style('assets/libs/datepicker/datepicker.min.css') }}

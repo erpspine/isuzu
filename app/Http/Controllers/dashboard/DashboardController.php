@@ -14,7 +14,8 @@ class DashboardController extends Controller
 	public function dashboard()
     {
             $status=0;
-            $shops = Shop::where('check_point', 1)->with(['unitmovement'=> function ($query) use( $status) {
+            $array=['1036','1037','1038','4'];
+            $shops = Shop::whereNotIn('id', $array)->where('check_point', 1)->with(['unitmovement'=> function ($query) use( $status) {
                 $query->where('current_shop','>', $status);
             }]) ->get();
 

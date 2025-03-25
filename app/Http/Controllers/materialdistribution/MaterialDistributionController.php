@@ -22,45 +22,43 @@ class MaterialDistributionController extends Controller
      */
     public function index()
     {
-		
         try {
-
-
             if (request()->ajax()) {
-               $materialDistribution = Part_Template::whereNotNull('id');
-               $material_distribution_model_id = request()->get('material_distribution_model_id', null);
-               if (!empty($material_distribution_model_id)) {
-                   $materialDistribution->where('material_distribution_model_id', $material_distribution_model_id);
-               }
-               $materialDistribution-> get();
+                $materialDistribution = Part_Template::query();
+
+                $material_distribution_model_id = request()->get('material_distribution_model_id', null);
+
+                $materialDistribution->where('material_distribution_model_id', $material_distribution_model_id);
+
                 return DataTables::of($materialDistribution)
-                ->addColumn('model', function ($materialDistribution) {
-                    return @$materialDistribution->model->name;
-                })
+                    ->addColumn('model', function ($materialDistribution) {
+                        return optional($materialDistribution->model)->name; // Prevents errors if model is null
+                    })
                     ->addColumn('action', function ($materialDistribution) {
                         return '
-                        <div class="btn-group">
-                        <button type="button" class="btn btn-dark dropdown-toggle"
-                            data-toggle="dropdown" aria-haspopup="true"
-                            aria-expanded="false">
-                            <i class="ti-settings"></i>
-                        </button>
-                        <div class="dropdown-menu animated slideInUp"
-                            x-placement="bottom-start"
-                            style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, 35px, 0px);">
-                            <a class="dropdown-item" href="' . route('material-distribution.show', [$materialDistribution->id]) . '"><i
-                                    class="ti-eye"></i> Open</a>
-                            <a class="dropdown-item" href="' . route('material-distribution.edit', [$materialDistribution->id]) . '"><i
-                                    class="ti-pencil-alt"></i> Edit</a>
-
-                        </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-dark dropdown-toggle"
+                        data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">
+                        <i class="ti-settings"></i>
+                    </button>
+                    <div class="dropdown-menu animated slideInUp">
+                        <a class="dropdown-item" href="' . route('material-distribution.show', [$materialDistribution->id]) . '">
+                            <i class="ti-eye"></i> Open
+                        </a>
+                        <a class="dropdown-item" href="' . route('material-distribution.edit', [$materialDistribution->id]) . '">
+                            <i class="ti-pencil-alt"></i> Edit
+                        </a>
                     </div>
-                    ';
+                </div>';
                     })
+                    ->rawColumns(['action']) // Ensure the action buttons render as HTML
                     ->make(true);
             }
+
+            // Fetch models for the dropdown
             $models = MaterialDistributionModel::pluck('name', 'id');
-            return view('material_list.index',compact('models'));
+            return view('material_list.index', compact('models'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
@@ -74,8 +72,8 @@ class MaterialDistributionController extends Controller
     public function create()
     {
         $models = MaterialDistributionModel::pluck('name', 'id');
-        $template='mdl';
-        return view('material_list.create',compact('models','template'));
+        $template = 'mdl';
+        return view('material_list.create', compact('models', 'template'));
     }
 
     /**
@@ -105,13 +103,13 @@ class MaterialDistributionController extends Controller
                         $error_msg = "Some of the columns are missing. Please, use latest CSV file template.";
                         break;
                     }
-                   // dd($is_valid);
+                    // dd($is_valid);
                     $row_no = $key + 1;
                     $part_array = [];
-                   // $part_array['created_by'] = Auth()->User()->id;
+                    // $part_array['created_by'] = Auth()->User()->id;
                     $part_array['created_at'] = date('Y-m-d H:i:s');
                     $part_array['updated_at'] = date('Y-m-d H:i:s');
-                    $part_array['material_distribution_model_id']= $request->material_distribution_model_id;
+                    $part_array['material_distribution_model_id'] = $request->material_distribution_model_id;
                     //Add Part Number
                     //Batch Number number
                     // $batch_number = trim($value[19]);
@@ -237,28 +235,28 @@ class MaterialDistributionController extends Controller
             if (!$is_valid) {
                 throw new \Exception($error_msg);
             }
-  // Commit transaction before processing chunks
-  DB::commit();
+            // Commit transaction before processing chunks
+            DB::commit();
 
-          // Chunk size calculation
-        $chunk_size = floor(2100 / count($formated_data));
+            // Chunk size calculation
+            $chunk_size = floor(2100 / count($formated_data));
 
-        // Begin new transaction for inserting/updating chunks
-        DB::beginTransaction();
+            // Begin new transaction for inserting/updating chunks
+            DB::beginTransaction();
 
-        foreach (array_chunk($formated_data, $chunk_size) as $data_chunk) {
-            foreach ($data_chunk as $data) {
-                // Update or create records based on partnumber
-                Part_Template::updateOrCreate(['partnumber' => $data['partnumber'],'material_distribution_model_id'=>$request->material_distribution_model_id], $data);
+            foreach (array_chunk($formated_data, $chunk_size) as $data_chunk) {
+                foreach ($data_chunk as $data) {
+                    // Update or create records based on partnumber
+                    Part_Template::updateOrCreate(['partnumber' => $data['partnumber'], 'material_distribution_model_id' => $request->material_distribution_model_id], $data);
+                }
             }
-        }
 
-        // Commit the transaction
-        DB::commit();
-        $output = [
-            'success' => 1,
-            'msg' => 'Packaging List Imported Successfully!!'
-        ];
+            // Commit the transaction
+            DB::commit();
+            $output = [
+                'success' => 1,
+                'msg' => 'Packaging List Imported Successfully!!'
+            ];
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
@@ -279,9 +277,9 @@ class MaterialDistributionController extends Controller
      */
     public function show($id)
     {
-        $details=Part_Template::find($id);
+        $details = Part_Template::find($id);
 
-        return view('material_list.show',compact('details'));
+        return view('material_list.show', compact('details'));
     }
 
     /**
@@ -294,14 +292,12 @@ class MaterialDistributionController extends Controller
     {
 
         try {
-            $details=Part_Template::find($id);
+            $details = Part_Template::find($id);
             $models = MaterialDistributionModel::pluck('name', 'id');
-            return view('material_list.edit', compact('details','models'));
+            return view('material_list.edit', compact('details', 'models'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
-
-
     }
 
     /**
